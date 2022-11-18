@@ -11,6 +11,7 @@ enum {
         T_LPAREN,
         T_RPAREN,
         T_INT,
+        T_VAR,
         T_IDENT
 };
 
@@ -20,6 +21,17 @@ struct token {
         double dvalue;
 };
 typedef struct token token_t;
+
+enum {
+        T_FUNC_INTEGRAL,
+        T_FUNC_DERIVATIVE,
+        T_FUNC_MAX
+};
+
+static const char* T_FUNC_NAMES[] = {
+        [T_FUNC_INTEGRAL] = "INTEGRAL",
+        [T_FUNC_DERIVATIVE] = "DERIVATIVE"
+};
 
 int lex();
 

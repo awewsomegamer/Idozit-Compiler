@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 /*
 NUMBER = 0123456789
