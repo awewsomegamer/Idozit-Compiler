@@ -1,2 +1,2 @@
 all:
-	gcc test.c -o test.out -L../bin/library/mathcompiler.so -I../src/include
+	gcc test.c -L../bin/library -lmathcompiler -I../src/include -o test.out
