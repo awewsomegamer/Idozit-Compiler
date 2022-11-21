@@ -66,7 +66,7 @@ function: IDENTIFIER == reserved
 #define CAHEN_CONST                              0.64341054628833802618
 #define GELFOND_CONST                            23.1406926327792690057
 #define GELFOND_SCHNEIDER_CONST                  2.66514414269022518865
-#define SECOND FAVARD_CONST                      1.23370055013616982735
+#define SECOND_FAVARD_CONST                      1.23370055013616982735
 #define GOLDEN_ANGLE                             2.39996322972865332223
 #define SIERPINSKI_CONST                         2.58498175957925321706
 #define LANDAU_RAMANUJAN_CONST                   0.76422365358922066299
@@ -140,15 +140,19 @@ function: IDENTIFIER == reserved
  *
  * value        : An integer value
  * type         : The type of the current node (+, -, /, *, etc...)
+ * used         : How many branches are used
  * left & right : Branches to the left and right
  */
 struct tree_code
 {
-    int64_t value;
-    double dvalue;
+    double value;
     uint8_t type;
-    struct tree_code *left;
-    struct tree_code *right;
+    uint8_t used;
+
+    union {
+        struct tree_code *left;
+        struct tree_code *right;
+    } branches;
 };
 typedef struct tree_code tree_code_t;
 
