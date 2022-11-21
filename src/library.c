@@ -3,5 +3,4 @@
 
 context_t expression(const char *form, ...) {
         printf("Hello Library World %s\n", form);
-        lex(NULL);
 }

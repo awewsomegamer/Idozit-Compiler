@@ -39,60 +39,63 @@ char* get_string(char c) {
 }
 
 int lex(token_t* token) {
-    printf("LEX CALLED\n");
-    // char c = next_solid_char();
+    char c = next_solid_char();
 
-    // switch (c) {
-    // case '+':
-    //     token->type = T_ADD;
-    //     return 1;
+    switch (c) {
+    case '+':
+        token->type = T_ADD;
+        return 1;
 
-    // case '-':
-    //     token->type = T_SUB;
-    //     return 1;
+    case '-':
+        token->type = T_SUB;
+        return 1;
 
-    // case '*':
-    //     token->type = T_MUL;
-    //     return 1;
+    case '*':
+        token->type = T_MUL;
+        return 1;
 
-    // case '/':
-    //     token->type = T_DIV;
-    //     return 1;
+    case '/':
+        token->type = T_DIV;
+        return 1;
 
-    // case '(':
-    //     token->type = T_LPAREN;
-    //     return 1;
+    case '(':
+        token->type = T_LPAREN;
+        return 1;
 
-    // case ')':
-    //     token->type = T_RPAREN;
-    //     return 1;
+    case ')':
+        token->type = T_RPAREN;
+        return 1;
 
-    // default:
-    //     char* string = get_string(c);
+    default:
+        char* string = get_string(c);
 
-    //     for (int i = 0; i < variable_count; i++)
-    //         if (strcmp(string, variables_list[i]) == 0) {
-    //             token->type = T_VAR;
-    //             token->value = i;
-    //             return 1;
-    //         }
+        for (int i = 0; i < variable_count; i++)
+            if (strcmp(string, variables_list[i]) == 0) {
+                token->type = T_VAR;
+                token->value = i;
+                return 1;
+            }
 
-    //     for (int i = 0; i < T_FUNC_MAX; i++)
-    //         if (strcmp(string, T_FUNC_NAMES[i]) == 0) {
-    //             token->type = T_IDENT;
-    //             token->value = i;
-    //             return 1;
-    //         }
+        for (int i = 0; i < T_FUNC_MAX; i++)
+            if (strcmp(string, T_FUNC_NAMES[i]) == 0) {
+                token->type = T_IDENT;
+                token->value = i;
+                return 1;
+            }
 
-    //     // Number:
-    //     // Look at the string, while you don't reach a . you are looking at a whole number
-    //     // When you reach a . then flip over to the other integer, then put these two integers together
-    //     // To form a single double value
+        // Number:
+        // Look at the string, while you don't reach a . you are looking at a whole number
+        // When you reach a . then flip over to the other integer, then put these two integers together
+        // To form a single double value
+        // .5213 is not allowed
+        // 0.5213 is allowed
+        if (isdigit(*string)) {
+            token->type = T_NUMBER;
+            token->value = atof(string);
 
-    //     if (isdigit(*string)) {
-            
-    //     }
-    // }
+            return 1;
+        }
+    }
 
     return 0;
 }
