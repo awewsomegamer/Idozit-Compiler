@@ -36,47 +36,106 @@ void expect(uint8_t type) {
 }
 
 // Parse body:
+tree_code_t* addition();
 
-void addition();
+tree_code_t* term() {
+        tree_code_t* ret = create_empty(0, 0);
+        printf("TERM\n");
 
-void term() {
         if (accept(T_LPAREN)) {
                 printf("LPAREN\n");
-                addition();
+                ret = addition();
                 expect(T_RPAREN);
+
+                return ret;
         } else if (accept(T_NUMBER)) {
                 // Number
-                // current_node->branches[current_node->used++] = create_empty(T_NUMBER, last_token->value);
                 printf("NUMBER\n");
+                
+                ret->type = T_NUMBER;
+                ret->value = last_token->value;
+                
+                return ret;
         } else if (accept(T_VAR)) {
                 // Variable
-                // current_node->branches[current_node->used++] = create_empty(T_VAR, last_token->value);
                 printf("VARIABLE\n");
+                
+                ret->type = T_VAR;
+                ret->value = last_token->value;
+                
+                return ret;
         } else if (accept(T_IDENT)) {
                 // Function
 
+                printf("FUNCTION\n");
+
+                int degree = 1;
+                if (accept(T_NUMBER))
+                        degree = last_token->value;
+                
+                expect(T_LPAREN);
+                ret = addition();
+                expect(T_RPAREN);
+                ret->value = degree;
+                ret->type = T_IDENT;
+
+                return ret;
         }
 }
 
-void multiplication() {
-        do {
-                printf("MUL\n");
-                term();
-        } while (accept(T_MUL) || accept(T_DIV));
+tree_code_t* multiplication() {
+        int cont_loop = 1;
+        tree_code_t *left, *right;
+
+        left = term();
+        printf("MULTIPLICATION / DIVISION\n");
+        cont_loop = accept(T_MUL);
+        cont_loop = accept(T_DIV) << 1;
+
+        if (cont_loop) 
+                right = multiplication();
+
+        tree_code_t* tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
+
+        return tree;
 }
 
-void addition() {
-        do {
-                printf("ADD\n");
-                multiplication();
-        } while (accept(T_ADD) || accept(T_SUB));
+tree_code_t* addition() {
+        int cont_loop = 1;
+        tree_code_t *left, *right;
+        left = multiplication();
+        printf("ADDITION / SUBTRACTION\n");
+        
+        cont_loop = accept(T_ADD);
+        cont_loop = accept(T_SUB) << 1;
+
+        if (cont_loop) 
+                right = addition();
+
+        tree_code_t* tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
+
+        return tree;
 }
 
+// Implement settings hooks
+//      -> Error pass through
 tree_code_t* build_tree() {
-        tree_code_t* head = create_empty(0, 0);
-        current_node = head;
+        current_token = malloc(sizeof(token_t));
+        lex(current_token);
 
-        addition();
-
-        return head;
+        return addition();
 }
+
+double evaluate_tree(tree_code_t* head) {
+        double left = 0, right = 0;
+        if (head->branches.left != NULL) left = evaluate_tree(head->branches.left);
+        if (head->branches.right != NULL) right = evaluate_tree(head->branches.right);
+
+        switch (head->type) {
+        case T_ADD: return left + right;
+        case T_SUB: return left - right;
+        case T_MUL: return left * right;
+        case T_DIV: return left / right;
+        }
+}
+

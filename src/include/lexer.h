@@ -3,6 +3,10 @@
 
 #include <design1.h>
 
+extern char *expression_string;
+extern char **variables_list;
+extern uint32_t variable_count;
+
 enum {
         T_ADD,
         T_SUB,

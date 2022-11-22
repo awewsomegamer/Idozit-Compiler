@@ -27,9 +27,11 @@ char* get_string(char c) {
     char* string = malloc(1);
     *string = c;
     int count = 1;
-
+    
     while (c != ' ' || c != '\t') {
         c = next_char();
+        if (c == ' ' || c == '\t') break;
+
         count++;
         string = realloc(string, count);
         *(string + (count - 1)) = c;
@@ -90,9 +92,10 @@ int lex(token_t* token) {
         // .5213 is not allowed
         // 0.5213 is allowed
         if (isdigit(*string)) {
+            printf("DIGIT\n");
             token->type = T_NUMBER;
             token->value = atof(string);
-
+        
             return 1;
         }
     }
