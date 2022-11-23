@@ -8,7 +8,6 @@ context_t expression(const char *form, ...) {
         variable_count = 0;
         
         tree_code_t* tree = build_tree();
-        printf("Got here\n");
 
-        printf("%s = %f\n", form, evaluate_tree(tree));
+        printf("%s = %f\n", form, evaluate_tree(tree, 'H'));
 }

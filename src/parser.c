@@ -1,5 +1,8 @@
 #include <parser.h>
 #include <lexer.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 tree_code_t* current_node = NULL;
 token_t* current_token = NULL;
@@ -10,8 +13,8 @@ tree_code_t* create_node(int type, double value, tree_code_t* left, tree_code_t*
 
         node->type = type;
         node->value = value;
-        node->branches.left = left;
-        node->branches.right = right;
+        node->left = left;
+        node->right = right;
 
         return node;
 }
@@ -50,10 +53,10 @@ tree_code_t* term() {
                 return ret;
         } else if (accept(T_NUMBER)) {
                 // Number
-                printf("NUMBER\n");
                 
                 ret->type = T_NUMBER;
                 ret->value = last_token->value;
+                printf("NUMBER %f\n", ret->value);
                 
                 return ret;
         } else if (accept(T_VAR)) {
@@ -84,7 +87,7 @@ tree_code_t* term() {
 }
 
 tree_code_t* multiplication() {
-        int cont_loop = 1;
+        int cont_loop = 0;
         tree_code_t *left, *right;
 
         left = term();
@@ -92,8 +95,10 @@ tree_code_t* multiplication() {
         cont_loop = accept(T_MUL);
         cont_loop = accept(T_DIV) << 1;
 
-        if (cont_loop) 
-                right = multiplication();
+        if (!cont_loop)
+                return left;
+
+        right = multiplication();
 
         tree_code_t* tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
 
@@ -101,7 +106,7 @@ tree_code_t* multiplication() {
 }
 
 tree_code_t* addition() {
-        int cont_loop = 1;
+        int cont_loop = 0;
         tree_code_t *left, *right;
         left = multiplication();
         printf("ADDITION / SUBTRACTION\n");
@@ -109,8 +114,10 @@ tree_code_t* addition() {
         cont_loop = accept(T_ADD);
         cont_loop = accept(T_SUB) << 1;
 
-        if (cont_loop) 
-                right = addition();
+        if (!cont_loop) 
+                return left;
+
+        right = addition();
 
         tree_code_t* tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
 
@@ -121,21 +128,24 @@ tree_code_t* addition() {
 //      -> Error pass through
 tree_code_t* build_tree() {
         current_token = malloc(sizeof(token_t));
+        last_token = malloc(sizeof(token_t));
         lex(current_token);
 
         return addition();
 }
 
-double evaluate_tree(tree_code_t* head) {
-        double left = 0, right = 0;
-        if (head->branches.left != NULL) left = evaluate_tree(head->branches.left);
-        if (head->branches.right != NULL) right = evaluate_tree(head->branches.right);
+double evaluate_tree(tree_code_t* head, char c) {
+        double left, right;
+
+        if (head->left != NULL) left = evaluate_tree(head->left, 'L');
+        if (head->right != NULL) right = evaluate_tree(head->right, 'R');
 
         switch (head->type) {
         case T_ADD: return left + right;
         case T_SUB: return left - right;
         case T_MUL: return left * right;
         case T_DIV: return left / right;
+        case T_NUMBER: return head->value;
         }
 }
 

@@ -147,12 +147,9 @@ struct tree_code
 {
     double value;
     uint8_t type;
-    uint8_t used;
 
-    union {
-        struct tree_code *left;
-        struct tree_code *right;
-    } branches;
+    struct tree_code *left;
+    struct tree_code *right;
 };
 typedef struct tree_code tree_code_t;
 
