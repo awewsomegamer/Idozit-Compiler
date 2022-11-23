@@ -95,7 +95,7 @@ tree_code_t* multiplication() {
         cont_loop = accept(T_MUL);
         cont_loop += accept(T_DIV) << 1;
 
-        if (!cont_loop)
+        if (!cont_loop || current_token->type == T_EOF || last_token->type == T_EOF)
                 return left;
 
         right = multiplication();
@@ -114,7 +114,7 @@ tree_code_t* addition() {
         cont_loop = accept(T_ADD);
         cont_loop += accept(T_SUB) << 1;
 
-        if (!cont_loop) 
+        if (!cont_loop || current_token->type == T_EOF || last_token->type == T_EOF) 
                 return left;
 
         right = addition();
@@ -148,4 +148,3 @@ double evaluate_tree(tree_code_t* head, char c) {
         case T_NUMBER: return head->value;
         }
 }
-

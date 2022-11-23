@@ -44,6 +44,11 @@ char* get_string(char c) {
 }
 
 int lex(token_t* token) {
+    if (expression_ptr >= strlen(expression_string)) {
+        token->type = T_EOF;
+        return 1;
+    }
+
     char c = next_solid_char();
 
     switch (c) {

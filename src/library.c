@@ -1,6 +1,7 @@
 #include <design1.h>
 #include <lexer.h>
 #include <parser.h>
+#include <semantics.h>
 
 context_t expression(const char *form, ...) {
         expression_string = form;
@@ -9,6 +10,7 @@ context_t expression(const char *form, ...) {
         expression_ptr = 0;
         
         tree_code_t* tree = build_tree();
+        validate(tree);
 
         printf("%s = %f\n", form, evaluate_tree(tree, 'H'));
 }

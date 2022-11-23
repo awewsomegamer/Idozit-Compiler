@@ -10,6 +10,7 @@ extern uint32_t variable_count;
 extern uint32_t expression_ptr;
 
 enum {
+        T_EOF,
         T_ADD,
         T_SUB,
         T_MUL,
@@ -19,6 +20,19 @@ enum {
         T_NUMBER,
         T_VAR,
         T_IDENT
+};
+
+static const char* TOKEN_NAMES[] = {
+        [T_EOF] =    "End Of File",
+        [T_ADD] =    "Addition",
+        [T_SUB] =    "Subtraction",
+        [T_MUL] =    "Multiplication",
+        [T_DIV] =    "Division",
+        [T_LPAREN] = "Left Parenthesis",
+        [T_RPAREN] = "Left Parenthesis",
+        [T_NUMBER] = "Number",
+        [T_VAR] =    "Variable",
+        [T_IDENT] =  "Identifier"
 };
 
 struct token {
