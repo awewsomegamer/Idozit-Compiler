@@ -28,10 +28,10 @@ char* get_string(char c) {
     *string = c;
     int count = 1;
 
-    while (isalnum(c)) {
+    while (isalnum(c) || c == '.') {
         c = next_char();
 
-        if (!isalnum(c)) break;
+        if (!isalnum(c) && c != '.') break;
 
         count++;
         string = realloc(string, count);

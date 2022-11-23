@@ -7,6 +7,8 @@ extern char *expression_string;
 extern char **variables_list;
 extern uint32_t variable_count;
 
+extern uint32_t expression_ptr;
+
 enum {
         T_ADD,
         T_SUB,
