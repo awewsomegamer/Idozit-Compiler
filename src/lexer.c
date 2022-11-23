@@ -27,15 +27,18 @@ char* get_string(char c) {
     char* string = malloc(1);
     *string = c;
     int count = 1;
-    
-    while (c != ' ' || c != '\t') {
+
+    while (isalnum(c)) {
         c = next_char();
-        if (c == ' ' || c == '\t') break;
+
+        if (!isalnum(c)) break;
 
         count++;
         string = realloc(string, count);
         *(string + (count - 1)) = c;
     }
+
+    expression_ptr--;
 
     return string;
 }
