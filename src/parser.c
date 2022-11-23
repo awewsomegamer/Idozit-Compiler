@@ -93,7 +93,7 @@ tree_code_t* multiplication() {
         left = term();
         printf("MULTIPLICATION / DIVISION\n");
         cont_loop = accept(T_MUL);
-        cont_loop = accept(T_DIV) << 1;
+        cont_loop += accept(T_DIV) << 1;
 
         if (!cont_loop)
                 return left;
@@ -112,7 +112,7 @@ tree_code_t* addition() {
         printf("ADDITION / SUBTRACTION\n");
         
         cont_loop = accept(T_ADD);
-        cont_loop = accept(T_SUB) << 1;
+        cont_loop += accept(T_SUB) << 1;
 
         if (!cont_loop) 
                 return left;
