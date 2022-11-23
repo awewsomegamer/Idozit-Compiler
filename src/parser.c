@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 tree_code_t* current_node = NULL;
 token_t* current_token = NULL;
@@ -53,11 +54,22 @@ tree_code_t* term() {
                 return ret;
         } else if (accept(T_NUMBER)) {
                 // Number
-                
                 ret->type = T_NUMBER;
                 ret->value = last_token->value;
                 printf("NUMBER %f\n", ret->value);
-                
+
+                if (accept(T_EXPONENT)) {
+                        expect(T_LPAREN);
+                        tree_code_t* power = addition();
+                        expect(T_RPAREN);
+
+                        tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
+                        exponent_ret->left = ret;
+                        exponent_ret->right = power;
+
+                        return exponent_ret;
+                }
+
                 return ret;
         } else if (accept(T_VAR)) {
                 // Variable
@@ -145,6 +157,7 @@ double evaluate_tree(tree_code_t* head, char c) {
         case T_SUB: return left - right;
         case T_MUL: return left * right;
         case T_DIV: return left / right;
+        case T_EXPONENT: return pow(left, right);
         case T_NUMBER: return head->value;
         }
 }

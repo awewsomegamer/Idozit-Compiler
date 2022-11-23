@@ -76,6 +76,10 @@ int lex(token_t* token) {
         token->type = T_RPAREN;
         return 1;
 
+    case '^':
+        token->type = T_EXPONENT;
+        return 1;
+
     default:
         char* string = get_string(c);
 

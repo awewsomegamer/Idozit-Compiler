@@ -17,22 +17,24 @@ enum {
         T_DIV,
         T_LPAREN,
         T_RPAREN,
+        T_EXPONENT,
         T_NUMBER,
         T_VAR,
         T_IDENT
 };
 
 static const char* TOKEN_NAMES[] = {
-        [T_EOF] =    "End Of File",
-        [T_ADD] =    "Addition",
-        [T_SUB] =    "Subtraction",
-        [T_MUL] =    "Multiplication",
-        [T_DIV] =    "Division",
-        [T_LPAREN] = "Left Parenthesis",
-        [T_RPAREN] = "Left Parenthesis",
-        [T_NUMBER] = "Number",
-        [T_VAR] =    "Variable",
-        [T_IDENT] =  "Identifier"
+        [T_EOF] =      "End Of File",
+        [T_ADD] =      "Addition",
+        [T_SUB] =      "Subtraction",
+        [T_MUL] =      "Multiplication",
+        [T_DIV] =      "Division",
+        [T_LPAREN] =   "Left Parenthesis",
+        [T_RPAREN] =   "Left Parenthesis",
+        [T_EXPONENT] = "Exponent", 
+        [T_NUMBER] =   "Number",
+        [T_VAR] =      "Variable",
+        [T_IDENT] =    "Identifier"
 };
 
 struct token {
