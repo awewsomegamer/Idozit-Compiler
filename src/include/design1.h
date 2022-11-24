@@ -220,4 +220,16 @@ const char *tree_to(tree_code_t *tree, const char *language);
  */
 void objectify(FILE *file, code_block_t code, ...);
 
+/* void set_message_handler(void*) :
+ * This function will set the message handler
+ * to the given void* (function).
+ */
+void set_message_handler(void* func);
+
+/* void default_message_handler() :
+ * This function will revert the message handler
+ * to the default message handler. 
+ */
+void default_message_handler();
+
 #endif

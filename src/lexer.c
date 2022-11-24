@@ -44,6 +44,9 @@ char* get_string(char c) {
 }
 
 int lex(token_t* token) {
+    token->type = 0;
+    token->value = 0;
+
     if (expression_ptr >= strlen(expression_string)) {
         token->type = T_EOF;
         return 1;
@@ -97,10 +100,6 @@ int lex(token_t* token) {
                 return 1;
             }
 
-        // Number:
-        // Look at the string, while you don't reach a . you are looking at a whole number
-        // When you reach a . then flip over to the other integer, then put these two integers together
-        // To form a single double value
         // .5213 is not allowed
         // 0.5213 is allowed
         if (isdigit(*string)) {

@@ -5,7 +5,6 @@
 #include <string.h>
 #include <math.h>
 
-tree_code_t* current_node = NULL;
 token_t* current_token = NULL;
 token_t* last_token = NULL;
 
@@ -24,7 +23,9 @@ tree_code_t* create_node(int type, double value, tree_code_t* left, tree_code_t*
 
 uint8_t accept(uint8_t type) {
         if (current_token->type == type) {
-                last_token = current_token;
+                last_token->type = current_token->type;
+                last_token->value = current_token->value;
+
                 lex(current_token);
                 return 1;
         }
@@ -148,7 +149,12 @@ tree_code_t* build_tree() {
         last_token = malloc(sizeof(token_t));
         lex(current_token);
 
-        return addition();
+        tree_code_t* tree = addition();
+
+        free(current_token);
+        free(last_token);
+
+        return tree;
 }
 
 double evaluate_tree(tree_code_t* head, char c) {

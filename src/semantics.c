@@ -15,6 +15,7 @@ void validate(tree_code_t* head) {
         case T_SUB:
         case T_MUL:
         case T_DIV:
+        case T_EXPONENT:
                 if (!(head->left != NULL && head->right != NULL)) {
                         printf("Error: %s statement incomplete\n", TOKEN_NAMES[head->type]);
                 }
