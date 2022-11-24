@@ -41,6 +41,15 @@ void expect(uint8_t type) {
 
 // Parse body:
 tree_code_t* addition();
+tree_code_t* term();
+
+tree_code_t* exponent(tree_code_t* ret) {
+        tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
+        exponent_ret->left = ret;
+        exponent_ret->right = term();
+
+        return exponent_ret;
+}
 
 tree_code_t* term() {
         tree_code_t* ret = create_empty(0, 0);
@@ -51,6 +60,8 @@ tree_code_t* term() {
                 ret = addition();
                 expect(T_RPAREN);
 
+                if (accept(T_EXPONENT)) return exponent(ret);
+
                 return ret;
         } else if (accept(T_NUMBER)) {
                 // Number
@@ -58,17 +69,7 @@ tree_code_t* term() {
                 ret->value = last_token->value;
                 printf("NUMBER %f\n", ret->value);
 
-                if (accept(T_EXPONENT)) {
-                        expect(T_LPAREN);
-                        tree_code_t* power = addition();
-                        expect(T_RPAREN);
-
-                        tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
-                        exponent_ret->left = ret;
-                        exponent_ret->right = power;
-
-                        return exponent_ret;
-                }
+                if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
         } else if (accept(T_VAR)) {
@@ -78,6 +79,8 @@ tree_code_t* term() {
                 ret->type = T_VAR;
                 ret->value = last_token->value;
                 
+                if (accept(T_EXPONENT)) return exponent(ret);
+
                 return ret;
         } else if (accept(T_IDENT)) {
                 // Function
@@ -93,6 +96,8 @@ tree_code_t* term() {
                 expect(T_RPAREN);
                 ret->value = degree;
                 ret->type = T_IDENT;
+
+                if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
         }
@@ -157,7 +162,14 @@ double evaluate_tree(tree_code_t* head, char c) {
         case T_SUB: return left - right;
         case T_MUL: return left * right;
         case T_DIV: return left / right;
-        case T_EXPONENT: return pow(left, right);
+        case T_EXPONENT: {
+                double result = 1;
+
+                for (double i = 0; i < right; i++)
+                        result *= left;
+
+                return result;
+        }
         case T_NUMBER: return head->value;
         }
 }
