@@ -3,13 +3,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <math.h>
+#include <messages.h>
 
-token_t* current_token = NULL;
-token_t* last_token = NULL;
+token_t *current_token = NULL;
+token_t *last_token = NULL;
 
-tree_code_t* create_node(int type, double value, tree_code_t* left, tree_code_t* right) {
-        tree_code_t* node = malloc(sizeof(tree_code_t));
+tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t *right)
+{
+        tree_code_t *node = malloc(sizeof(tree_code_t));
 
         node->type = type;
         node->value = value;
@@ -21,7 +22,14 @@ tree_code_t* create_node(int type, double value, tree_code_t* left, tree_code_t*
 
 #define create_empty(type, value) create_node(type, value, NULL, NULL)
 
-uint8_t accept(uint8_t type) {
+/* uint8_t accept(uint8_t type)
+ * Is the current token's type == the given type?
+ *
+ * Yes: Move the current token to the last token, move to the next token, return 1
+ * No: Return 0
+ */
+uint8_t accept(uint8_t type)
+{
         if (current_token->type == type) {
                 last_token->type = current_token->type;
                 last_token->value = current_token->value;
@@ -33,32 +41,44 @@ uint8_t accept(uint8_t type) {
         return 0;
 }
 
-void expect(uint8_t type) {
+/* void expect(uint8_t type)
+ * Expect the token type, type. If the accept
+ * function returns 1, move on, otherwise something
+ * is wrong with the program.
+ */
+void expect(uint8_t type)
+{
         if (accept(type))
                 return;
 
-        // Big error
+        message(MESSAGE_FATAL, "Expected token type %d (%s) instead of %d (%s)\n", type, TOKEN_NAMES[type], current_token->type, TOKEN_NAMES[current_token->type]);
 }
 
-// Parse body:
-tree_code_t* addition();
-tree_code_t* term();
+// Recursive Descent Parser:
+tree_code_t *addition();
+tree_code_t *term();
 
-tree_code_t* exponent(tree_code_t* ret) {
+tree_code_t *exponent(tree_code_t *ret)
+{
         tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
         exponent_ret->left = ret;
         exponent_ret->right = term();
 
+        message(MESSAGE_DEBUG, "EXPONENT\n");
+        
         return exponent_ret;
 }
 
-tree_code_t* term() {
-        tree_code_t* ret = create_empty(0, 0);
-        printf("TERM\n");
+tree_code_t *term()
+{
+        tree_code_t *ret = create_empty(0, 0);
 
         if (accept(T_LPAREN)) {
-                printf("LPAREN\n");
-                ret = addition();
+                // ( EXPRESSION )
+
+                message(MESSAGE_DEBUG, "LPAREN\n");
+                if (current_token->type != T_RPAREN)
+                        ret = addition();
                 expect(T_RPAREN);
 
                 if (accept(T_EXPONENT)) return exponent(ret);
@@ -66,16 +86,18 @@ tree_code_t* term() {
                 return ret;
         } else if (accept(T_NUMBER)) {
                 // Number
+
                 ret->type = T_NUMBER;
                 ret->value = last_token->value;
-                printf("NUMBER %f\n", ret->value);
+                message(MESSAGE_DEBUG, "NUMBER %f\n", ret->value);
 
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
         } else if (accept(T_VAR)) {
                 // Variable
-                printf("VARIABLE\n");
+
+                message(MESSAGE_DEBUG, "VARIABLE\n");
                 
                 ret->type = T_VAR;
                 ret->value = last_token->value;
@@ -86,7 +108,7 @@ tree_code_t* term() {
         } else if (accept(T_IDENT)) {
                 // Function
 
-                printf("FUNCTION\n");
+                message(MESSAGE_DEBUG, "FUNCTION\n");
 
                 int degree = 1;
                 if (accept(T_NUMBER))
@@ -105,11 +127,13 @@ tree_code_t* term() {
 }
 
 tree_code_t* multiplication() {
-        int cont_loop = 0;
+        int cont_loop = 0; // 0: Return left, 1: Continue multiplication, 2: Continue division
         tree_code_t *left, *right;
 
         left = term();
-        printf("MULTIPLICATION / DIVISION\n");
+        
+        message(MESSAGE_DEBUG, "MULTIPLICATION / DIVISION\n");
+
         cont_loop = accept(T_MUL);
         cont_loop += accept(T_DIV) << 1;
 
@@ -118,16 +142,18 @@ tree_code_t* multiplication() {
 
         right = multiplication();
 
-        tree_code_t* tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
+        tree_code_t *tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
 
         return tree;
 }
 
 tree_code_t* addition() {
-        int cont_loop = 0;
+        int cont_loop = 0; // 0: Return left, 1: Continue addition, 2: Continue subtraction
         tree_code_t *left, *right;
+
         left = multiplication();
-        printf("ADDITION / SUBTRACTION\n");
+
+        message(MESSAGE_DEBUG, "ADDITION / SUBTRACTION\n");
         
         cont_loop = accept(T_ADD);
         cont_loop += accept(T_SUB) << 1;
@@ -137,14 +163,17 @@ tree_code_t* addition() {
 
         right = addition();
 
-        tree_code_t* tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
+        tree_code_t *tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
 
         return tree;
 }
 
-// Implement settings hooks
-//      -> Error pass through
-tree_code_t* build_tree() {
+/* tree_code_t *build_tree() :
+ * This function will build the AST
+ * which can be used later.
+ */
+tree_code_t *build_tree()
+{
         current_token = malloc(sizeof(token_t));
         last_token = malloc(sizeof(token_t));
         lex(current_token);
@@ -157,11 +186,12 @@ tree_code_t* build_tree() {
         return tree;
 }
 
-double evaluate_tree(tree_code_t* head, char c) {
-        double left, right;
+double evaluate_tree(tree_code_t *head)
+{
+        double left = 0, right = 0;
 
-        if (head->left != NULL) left = evaluate_tree(head->left, 'L');
-        if (head->right != NULL) right = evaluate_tree(head->right, 'R');
+        if (head->left != NULL) left = evaluate_tree(head->left);
+        if (head->right != NULL) right = evaluate_tree(head->right);
 
         switch (head->type) {
         case T_ADD: return left + right;

@@ -4,6 +4,6 @@
 #include <design1.h>
 
 tree_code_t* build_tree();
-double evaluate_tree(tree_code_t* head, char c);
+double evaluate_tree(tree_code_t* head);
 
 #endif

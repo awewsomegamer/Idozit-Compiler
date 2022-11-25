@@ -7,25 +7,21 @@ void _set_message_handler(void* handler) {
         message_handler_function = handler;
 }
 
-void message(const char* message, int level, ...) {
+void message(int level, const char* message, ...) {
         va_list args;
         va_start(args, level);
 
-        if (message_handler_function != NULL)
+        if (level == MESSAGE_DEBUG && !DEBUG)
+                return;
+
+        if (message_handler_function != NULL) {
                 (*message_handler_function)(message, level, args);
-
-        switch (level) {
-        case MESSAGE_FATAL:
-                break;
-        
-        case MESSAGE_ERROR:
-                break;
-
-        case MESSAGE_WARNING:
-                break;
-
-        case MESSAGE_DEBUG:
-                break;
+                return;
         }
-        
+
+        printf("[%s]: ", MESSAGE_NAMES[level]);
+        vprintf(message, args);
+
+        if (level == MESSAGE_FATAL)
+                exit(1);
 }

@@ -23,7 +23,7 @@ enum {
         T_IDENT
 };
 
-static const char* TOKEN_NAMES[] = {
+static const char *TOKEN_NAMES[] = {
         [T_EOF] =      "End Of File",
         [T_ADD] =      "Addition",
         [T_SUB] =      "Subtraction",
@@ -49,7 +49,7 @@ enum {
         T_FUNC_MAX
 };
 
-static const char* T_FUNC_NAMES[] = {
+static const char *T_FUNC_NAMES[] = {
         [T_FUNC_INTEGRAL] = "INTEGRAL",
         [T_FUNC_DERIVATIVE] = "DERIVATIVE"
 };

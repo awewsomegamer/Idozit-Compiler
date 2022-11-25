@@ -10,7 +10,7 @@ enum {
         MESSAGE_DEBUG,
 };
 
-static const char* ERROR_NAMES[] = {
+static const char* MESSAGE_NAMES[] = {
         [MESSAGE_FATAL]     = "FATAL ERROR",
         [MESSAGE_ERROR]     = "ERROR",
         [MESSAGE_WARNING]   = "WARNING",
@@ -20,6 +20,6 @@ static const char* ERROR_NAMES[] = {
 extern void (*message_handler_function)(const char*, int, va_list);
 
 void _set_message_handler(void* handler);
-void message(const char* message, int level, ...);
+void message(int level, const char* message, ...);
 
 #endif

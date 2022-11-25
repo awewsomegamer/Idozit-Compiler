@@ -3,6 +3,6 @@
 
 #include <design1.h>
 
-void validate(tree_code_t* head);
+void validate(tree_code_t *head);
 
 #endif

@@ -25,7 +25,7 @@ context_t expression(const char *form, ...) {
         tree_code_t* tree = build_tree();
         validate(tree);
 
-        printf("%s = %f\n", form, evaluate_tree(tree, 'H'));
+        printf("%s = %f\n", form, evaluate_tree(tree));
 }
 
 /* void set_error_handler(void*) :
