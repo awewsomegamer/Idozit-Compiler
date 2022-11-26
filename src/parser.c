@@ -126,7 +126,8 @@ tree_code_t *term()
         }
 }
 
-tree_code_t* multiplication() {
+tree_code_t *multiplication()
+{
         int cont_loop = 0; // 0: Return left, 1: Continue multiplication, 2: Continue division
         tree_code_t *left, *right;
 
@@ -147,7 +148,8 @@ tree_code_t* multiplication() {
         return tree;
 }
 
-tree_code_t* addition() {
+tree_code_t *addition()
+{
         int cont_loop = 0; // 0: Return left, 1: Continue addition, 2: Continue subtraction
         tree_code_t *left, *right;
 

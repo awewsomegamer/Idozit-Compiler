@@ -16,7 +16,8 @@
  *                               will result int the generated function
  *                               being called as func(x, y);            )
  */
-context_t expression(const char *form, ...) {
+context_t expression(const char *form, ...)
+{
         expression_string = form;
         variables_list = NULL;
         variable_count = 0;
@@ -32,7 +33,8 @@ context_t expression(const char *form, ...) {
  * This function will set the error handler
  * to the given void* (function).
  */
-void set_error_handler(void* func) {
+void set_error_handler(void* func)
+{
        _set_message_handler(func); 
 }
 
@@ -40,6 +42,7 @@ void set_error_handler(void* func) {
  * This function will revert the error handler
  * to the default error handler. 
  */
-void default_error_handler() {
+void default_error_handler()
+{
         _set_message_handler(NULL);
 }
