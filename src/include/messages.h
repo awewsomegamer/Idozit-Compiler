@@ -17,9 +17,9 @@ static const char* MESSAGE_NAMES[] = {
         [MESSAGE_DEBUG]     = "DEBUG"
 };
 
-extern void (*message_handler_function)(const char*, int, va_list);
+extern void (*message_handler_function)(int, const char*, va_list);
 
-void _set_message_handler(void* handler);
-void message(int level, const char* message, ...);
+void _set_message_handler(void (*handler)(int, const char*, va_list));
+void message(int level, const char *message, ...);
 
 #endif

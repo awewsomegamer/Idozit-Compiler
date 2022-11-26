@@ -33,7 +33,7 @@ context_t expression(const char *form, ...)
  * This function will set the error handler
  * to the given void* (function).
  */
-void set_error_handler(void* func)
+void set_message_handler(void (*func)(int, const char *, va_list))
 {
        _set_message_handler(func); 
 }
@@ -42,7 +42,7 @@ void set_error_handler(void* func)
  * This function will revert the error handler
  * to the default error handler. 
  */
-void default_error_handler()
+void default_message_handler()
 {
         _set_message_handler(NULL);
 }

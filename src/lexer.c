@@ -16,7 +16,7 @@ uint32_t expression_ptr = 0;
  */
 char next_char()
 {
-    return *(expression_string + expression_ptr++);
+	return *(expression_string + expression_ptr++);
 }
 
 /* char next_solid_char() :
@@ -26,12 +26,12 @@ char next_char()
  */
 char next_solid_char()
 {
-    char c = next_char();
+	char c = next_char();
 
-    while (c == ' ' || c == '\t')
-        c = next_char();
+	while (c == ' ' || c == '\t')
+		c = next_char();
 
-    return c;
+	return c;
 }
 
 /* char* get_string(char) :
@@ -42,23 +42,23 @@ char next_solid_char()
  */
 char* get_string(char c)
 {
-    char* string = malloc(1);
-    *string = c;
-    int count = 1;
+	char* string = malloc(1);
+	*string = c;
+	int count = 1;
 
-    while (isalnum(c) || c == '.') {
-        c = next_char();
+	while (isalnum(c) || c == '.') {
+		c = next_char();
 
-        if (!isalnum(c) && c != '.') break;
+		if (!isalnum(c) && c != '.') break;
 
-        count++;
-        string = realloc(string, count);
-        *(string + (count - 1)) = c;
-    }
+		count++;
+		string = realloc(string, count);
+		*(string + (count - 1)) = c;
+	}
 
-    expression_ptr--;
+	expression_ptr--;
 
-    return string;
+	return string;
 }
 
 /* int lex(token_t*) :
@@ -70,77 +70,77 @@ char* get_string(char c)
  */
 int lex(token_t *token)
 {
-    token->type = 0;
-    token->value = 0;
+	token->type = 0;
+	token->value = 0;
 
-    if (expression_ptr >= strlen(expression_string)) {
-        token->type = T_EOF;
-        return 1;
-    }
+	if (expression_ptr >= strlen(expression_string)) {
+		token->type = T_EOF;
+		return 1;
+	}
 
-    char c = next_solid_char();
+	char c = next_solid_char();
 
-    switch (c) {
-    case '+':
-        token->type = T_ADD;
-        return 1;
+	switch (c) {
+	case '+':
+		token->type = T_ADD;
+		return 1;
 
-    case '-':
-        token->type = T_SUB;
-        return 1;
+	case '-':
+		token->type = T_SUB;
+		return 1;
 
-    case '*':
-        token->type = T_MUL;
-        return 1;
+	case '*':
+		token->type = T_MUL;
+		return 1;
 
-    case '/':
-        token->type = T_DIV;
-        return 1;
+	case '/':
+		token->type = T_DIV;
+		return 1;
 
-    case '(':
-        token->type = T_LPAREN;
-        return 1;
+	case '(':
+		token->type = T_LPAREN;
+		return 1;
 
-    case ')':
-        token->type = T_RPAREN;
-        return 1;
+	case ')':
+		token->type = T_RPAREN;
+		return 1;
 
-    case '^':
-        token->type = T_EXPONENT;
-        return 1;
+	case '^':
+		token->type = T_EXPONENT;
+		return 1;
 
-    default:
-        char* string = get_string(c);
+	default:
+		char* string = get_string(c);
 
-        // Is this string one of the given variables?
-        for (int i = 0; i < variable_count; i++)
-            if (strcmp(string, variables_list[i]) == 0) {
-                // If so, return its index and a var token
-                token->type = T_VAR;
-                token->value = i;
-                return 1;
-            }
+		// Is this string one of the given variables?
+		for (int i = 0; i < variable_count; i++)
+			if (strcmp(string, variables_list[i]) == 0) {
+			// If so, return its index and a var token
+			token->type = T_VAR;
+			token->value = i;
+			return 1;
+			}
 
-        // Is this string one of the functions
-        for (int i = 0; i < T_FUNC_MAX; i++)
-            if (strcmp(string, T_FUNC_NAMES[i]) == 0) {
-                // If so, return its index and a identifier token
-                token->type = T_IDENT;
-                token->value = i;
-                return 1;
-            }
+		// Is this string one of the functions
+		for (int i = 0; i < T_FUNC_MAX; i++)
+			if (strcmp(string, T_FUNC_NAMES[i]) == 0) {
+				// If so, return its index and a identifier token
+				token->type = T_IDENT;
+				token->value = i;
+				return 1;
+			}
 
-        // If this string is representing a number,
-        // return a number token, with the double
-        // value of the string
-        if (isdigit(*string) || *string == '.') {
-            message(MESSAGE_DEBUG, "DIGIT\n");
-            token->type = T_NUMBER;
-            token->value = atof(string);
-        
-            return 1;
-        }
-    }
+		// If this string is representing a number,
+		// return a number token, with the double
+		// value of the string
+		if (isdigit(*string) || *string == '.') {
+			message(MESSAGE_DEBUG, "DIGIT\n");
+			token->type = T_NUMBER;
+			token->value = atof(string);
 
-    return 0;
+			return 1;
+		}
+	}
+
+	return 0;
 }

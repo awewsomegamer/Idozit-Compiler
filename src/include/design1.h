@@ -225,7 +225,7 @@ void objectify(FILE *file, code_block_t code, ...);
  * This function will set the message handler
  * to the given void* (function).
  */
-void set_message_handler(void* func);
+void set_message_handler(void (*func)(int, const char *, va_list));
 
 /* void default_message_handler() :
  * This function will revert the message handler

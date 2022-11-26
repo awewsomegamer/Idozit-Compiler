@@ -1,9 +1,9 @@
 #include <messages.h>
 #include <design1.h>
 
-void (*message_handler_function)(const char*, int, va_list) = NULL;
+void (*message_handler_function)(int, const char*, va_list) = NULL;
 
-void _set_message_handler(void* handler) {
+void _set_message_handler(void (*handler)(int, const char*, va_list)) {
         message_handler_function = handler;
 }
 
@@ -15,7 +15,7 @@ void message(int level, const char* message, ...) {
                 return;
 
         if (message_handler_function != NULL) {
-                (*message_handler_function)(message, level, args);
+                (*message_handler_function)(level, message, args);
                 return;
         }
 
