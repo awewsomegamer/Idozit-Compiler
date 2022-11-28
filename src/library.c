@@ -3,6 +3,7 @@
 #include <parser.h>
 #include <semantics.h>
 #include <messages.h>
+#include <generator.h>
 
 /* context_t expression(const char*, ...) :
  * Will take the given string and return it in a
@@ -27,6 +28,15 @@ context_t expression(const char *form, ...)
         validate(tree);
 
         printf("%s = %f\n", form, evaluate_tree(tree));
+
+        context_t* ctx = malloc(sizeof(context_t));
+        ctx->head = tree;
+
+        return *ctx;
+}
+
+code_block_t compile(context_t context) {
+        return default_x86_64_generator(context.head);
 }
 
 /* void set_error_handler(void*) :

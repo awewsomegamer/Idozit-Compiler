@@ -1,18 +1,17 @@
 #include <design1.h>
-
-void message_handler(int level, const char* format, va_list args) {
-        printf("Hello Message Handling in a custom way:\n");
-        vprintf(format, args);
-        printf("\n");
-}
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 int main() {
-        // expression("4*4 * 3.14159");
+        code_block_t code = compile(expression("5 + 5 + 6"));
+        
+        void* buf;
+	buf = mmap(0, code.size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	memcpy(buf, code.func, code.size);
 
-        set_message_handler(message_handler);
-
-        expression("5 + 5");
-        expression("(");
+	int result = ((int (*) (void))buf)();
+	printf("Results in %d\n", result);
 
         return 0;
 }

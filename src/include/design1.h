@@ -205,9 +205,10 @@ typedef struct compiler_params compiler_params_t;
 context_t expression(const char *form, ...);
 
 /* code_block_t compile(tree_code_t *tree) :
- * Compile the given tree, and return a code_block structure for further use.
+ * Compile the given context using the set generator
+ * and return it in a code_block_t structure.
  */
-code_block_t compile(tree_code_t *tree);
+code_block_t compile(context_t ctx);
 
 /* tree_to(tree_code_t *tree, const char *language) :
  * Takes the generated tree, tree, and converts it into a given language,
@@ -232,5 +233,15 @@ void set_message_handler(void (*func)(int, const char *, va_list));
  * to the default message handler. 
  */
 void default_message_handler();
+
+/* void set_code_generator(code_bloc_t (*generator)(tree_code_t*)) :
+ * Sets the code generator to the given code generator
+ */
+void set_code_generator(code_block_t (*generator)(tree_code_t *));
+
+/* void default_code_generator() :
+ * Sets the code generator to the default generator.c (which is for x86-64)
+ */
+void default_code_generator();
 
 #endif
