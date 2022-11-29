@@ -5,3 +5,11 @@ all:
 
 run: all
 	test/test.out
+
+
+testing:
+	nasm -f elf64 -o test.nasm.o test.nasm
+	gcc -c -o test.c.o test.c
+	gcc -o testing.out test.c.o test.nasm.o -no-pie
+
+	./testing.out
