@@ -133,10 +133,25 @@ int lex(token_t *token)
 		// If this string is representing a number,
 		// return a number token, with the double
 		// value of the string
-		if (isdigit(*string) || *string == '.') {
-			message(MESSAGE_DEBUG, "DIGIT\n");
-			token->type = T_NUMBER;
-			token->value = atof(string);
+		uint8_t decimal = 0;
+		if (isdigit(*string) || (decimal = (*string == '.'))) {
+			for (int i = 0; i < strlen(string); i++)
+				if (*(string + i) == '.') {
+					decimal = 1;
+					break;
+				}
+			
+			if (decimal) {
+				message(MESSAGE_DEBUG, "DECIMAL NUMBER\n");
+				token->type = T_NUMBER;
+				token->value = atof(string);
+				
+				return 1;
+			}
+
+			message(MESSAGE_DEBUG, "WHOLE NUMBER\n");
+			token->type = T_INT;
+			token->value = atoi(string);
 
 			return 1;
 		}

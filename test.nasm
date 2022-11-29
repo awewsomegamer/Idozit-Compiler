@@ -6,6 +6,10 @@ do_the_float:
         movsd xmm1, qword [float_number]
         addsd xmm0, xmm1
 
+        movsd xmm8, qword [float_number]
+
+        cvtsi2sd xmm0, rax
+
         ;movq rax, xmm0
         ;movq xmm0, rax
 

@@ -10,8 +10,8 @@ int main() {
 	buf = mmap(0, code.size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	memcpy(buf, code.func, code.size);
 
-	int result = ((int (*) (void))buf)();
-	printf("Results in %d\n", result);
+	double result = ((double (*) (void))buf)();
+	printf("Results in %f\n", result);
 
         return 0;
 }

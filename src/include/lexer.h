@@ -18,6 +18,7 @@ enum {
         T_LPAREN,
         T_RPAREN,
         T_EXPONENT,
+        T_INT,
         T_NUMBER,
         T_VAR,
         T_IDENT

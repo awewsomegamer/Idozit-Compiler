@@ -84,10 +84,10 @@ tree_code_t *term()
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
-        } else if (accept(T_NUMBER)) {
+        } else if (accept(T_NUMBER) || accept(T_INT)) {
                 // Number
 
-                ret->type = T_NUMBER;
+                ret->type = last_token->type;
                 ret->value = last_token->value;
                 message(MESSAGE_DEBUG, "NUMBER %f\n", ret->value);
 
@@ -208,6 +208,7 @@ double evaluate_tree(tree_code_t *head)
 
                 return result;
         }
+        case T_INT:
         case T_NUMBER: return head->value;
         }
 }
