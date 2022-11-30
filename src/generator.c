@@ -40,7 +40,7 @@ int evaluate(tree_code_t *tree) {
         case T_INT:
                 append_byte(0x48);
                 append_byte(0xC7);
-                append_byte((0xC0 + reg));
+                append_byte(0xC0);
                 
                 // if mov reg, 0, use xor reg, reg
                 // if mov rax, imm use mov rax op
@@ -53,7 +53,7 @@ int evaluate(tree_code_t *tree) {
                 append_byte(0x48 + ((xmm_reg >= 8) * 4));
                 append_byte(0x0F);
                 append_byte(0x2A);
-                append_byte(0xC0 + (xmm_reg * 8));
+                append_byte(0xC0 + ((xmm_reg % 8) * 8));
                 xmm_reg++;
 
                 return xmm_reg - 1;
@@ -61,8 +61,13 @@ int evaluate(tree_code_t *tree) {
         case T_NUMBER:
                 append_byte(0xF2);
                 append_byte(0x0F);
+
+                if (xmm_reg >= 8) {
+                        append_byte(0x44);
+                }
+
                 append_byte(0x10);
-                append_byte(0x04 | ((int)(xmm_reg / 2) << 4) + (xmm_reg % 3) * 8);
+                append_byte(0x04 + ((xmm_reg % 8) * 8));
                 append_byte(0x0D);
                 insert_reference(tree->value, position);
                 for(int i = 0; i < 4; i++) append_byte(0x00);
@@ -73,10 +78,53 @@ int evaluate(tree_code_t *tree) {
 
         case T_ADD:
                 append_byte(0xF2);
+
+                if (left >= 8) {
+                        append_byte(0x44);
+                }
+
                 append_byte(0x0F);
                 append_byte(0x58);
-                append_byte(0xC0 + right + (left * 8));  
+                append_byte(0xC0 + right + ((left % 8) * 8));  
 
+                return left;
+
+        case T_SUB:
+                append_byte(0xF2);
+                
+                if (left >= 8) {
+                        append_byte(0x44);
+                }
+
+                append_byte(0x0F);
+                append_byte(0x5C);
+                append_byte(0xC0 + right + ((left % 8) * 8));  
+
+                return left;
+
+        case T_MUL:
+                append_byte(0xF2);
+
+                if (left >= 8) {
+                        append_byte(0x44);
+                }
+
+                append_byte(0x0F);
+                append_byte(0x59);
+                append_byte(0xC0 + right + ((left % 8) * 8));
+
+                return left;
+
+        case T_DIV:
+                append_byte(0xF2);
+
+                if (left >= 8) {
+                        append_byte(0x44);
+                }
+
+                append_byte(0x0F);
+                append_byte(0x5E);
+                append_byte(0xC0 + right + ((left % 8) * 8));
 
                 return left;
         }
@@ -90,11 +138,11 @@ void fill_references() {
 
         for (int i = 0; i < reference_count; i++) {
                 int present_reference_idx = -1;
-                for (int j = 0; j < present_reference_count; j++) {
+                for (int j = 0; j < present_reference_count; j++)
                         if (present_references[j].value == references[i].value) {
+                                present_reference_idx = j;
                                 goto FILL_REFERENCE;
                         }
-                }
 
                 present_references = realloc(present_references, sizeof(struct reference) * (++present_reference_count));
                 present_references[present_reference_count - 1].position = data_position;
@@ -134,13 +182,6 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         append_byte(0x48);
         append_byte(0x89);
         append_byte(0xE5);
-
-        // // MOV RCX, DATA_SECTION
-        // append_byte(0x48);
-        // append_byte(0x8B);
-        // append_byte(0x0C);
-        // append_byte(0x25);
-        // for (int i = 0; i < 4; i++) append_byte(0x00);
         
         evaluate(tree);
 
@@ -151,35 +192,7 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         append_byte(0xC3);
 
         // Fill data buffer and get present reference list
-        struct reference* present_references = malloc(sizeof(struct reference));
-        int present_reference_count = 0;
-
-        for (int i = 0; i < reference_count; i++) {
-                int present_reference_idx = -1;
-                for (int j = 0; j < present_reference_count; j++)
-                        if (present_references[j].value == references[i].value) {
-                                present_reference_count = j;
-                                goto FILL_IN_REFERENCE;
-                        }
-
-                present_references = realloc(present_references, sizeof(struct reference) * (++present_reference_count));
-                present_references[present_reference_count - 1].position = data_position;
-                present_references[present_reference_count - 1].value = references[i].value;
-
-                uint64_t bytes_double;
-                memcpy(&bytes_double, &references[i].value, sizeof(uint64_t));
-
-                for (int j = 0; j < 8; j++) {
-                        data_buffer = realloc(data_buffer, ++data_position);
-                        *(data_buffer + data_position - 1) = (bytes_double >> (8 * j)) & 0xFF;
-                }
-
-                present_reference_idx = present_reference_count - 1;
-
-                FILL_IN_REFERENCE:
-                for (int x = 0; x < 4; x++)
-                        *(buffer + references[i].position + x) = ((present_references[present_reference_idx].position) >> (8 * x)) & 0xFF;        
-        }
+        fill_references();
 
         for (int i = 0; i < position; i++)
                 printf("%02X ", *(buffer + i));
