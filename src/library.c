@@ -5,6 +5,10 @@
 #include <messages.h>
 #include <generator.h>
 
+#include <string.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
 /* context_t expression(const char*, ...) :
  * Will take the given string and return it in a
  * context_t. This context_t will contain a list
@@ -37,6 +41,26 @@ context_t expression(const char *form, ...)
 
 code_block_t compile(context_t context) {
         return default_x86_64_generator(context.head);
+}
+
+double run(code_block_t code, ...) {
+        void* buf;
+	buf = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	memcpy(buf, code.func, code.code_size);
+        memcpy(buf + code.code_size, code.data, code.data_size);
+
+        for (int i = 0; i < code.code_size + code.data_size; i++)
+                printf("%02X ", *(((uint8_t*)buf) + i));
+        printf("\n");
+
+        asm("push rcx;    \
+             mov rcx, %0;" : : "a"((uintptr_t)buf + code.code_size) :);
+        
+        double result = ((double (*) (void))buf)();
+
+        asm("pop rcx");
+
+        return result;
 }
 
 /* void set_error_handler(void*) :

@@ -4,14 +4,9 @@
 #include <unistd.h>
 
 int main() {
-        code_block_t code = compile(expression("5.1 + 5"));
+        code_block_t code = compile(expression("5.1 + 5.2"));
         
-        void* buf;
-	buf = mmap(0, code.size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-	memcpy(buf, code.func, code.size);
-
-	double result = ((double (*) (void))buf)();
-	printf("Results in %f\n", result);
+	printf("Results in %f\n", run(code));
 
         return 0;
 }

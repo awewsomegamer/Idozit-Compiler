@@ -135,11 +135,12 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         append_byte(0x89);
         append_byte(0xE5);
 
-        // MOV RCX, DATA_SECTION
-        append_byte(0x48);
-        append_byte(0xB9);
-        append_byte(0xBB);
-        for (int i = 0; i < 7; i++) append_byte(0x00);
+        // // MOV RCX, DATA_SECTION
+        // append_byte(0x48);
+        // append_byte(0x8B);
+        // append_byte(0x0C);
+        // append_byte(0x25);
+        // for (int i = 0; i < 4; i++) append_byte(0x00);
         
         evaluate(tree);
 
@@ -156,8 +157,10 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         for (int i = 0; i < reference_count; i++) {
                 int present_reference_idx = -1;
                 for (int j = 0; j < present_reference_count; j++)
-                        if (present_references[j].value == references[i].value)
-                                continue;
+                        if (present_references[j].value == references[i].value) {
+                                present_reference_count = j;
+                                goto FILL_IN_REFERENCE;
+                        }
 
                 present_references = realloc(present_references, sizeof(struct reference) * (++present_reference_count));
                 present_references[present_reference_count - 1].position = data_position;
@@ -170,39 +173,22 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
                         data_buffer = realloc(data_buffer, ++data_position);
                         *(data_buffer + data_position - 1) = (bytes_double >> (8 * j)) & 0xFF;
                 }
+
+                present_reference_idx = present_reference_count - 1;
+
+                FILL_IN_REFERENCE:
+                for (int x = 0; x < 4; x++)
+                        *(buffer + references[i].position + x) = ((present_references[present_reference_idx].position) >> (8 * x)) & 0xFF;        
         }
 
-        // Fill in code buffer and add data buffer (if there is one to code buffer)
-        if (data_position > 0) {
-                int pos_pre_add = position;
-                buffer = realloc(buffer, position + data_position);
-                for (int i = position; i < position + data_position; i++)
-                        *(buffer + i) = *(data_buffer + (i - position));    
-
-                for (int i = 0; i < reference_count; i++) {
-                        for (int j = 0; j < present_reference_count; j++) {
-                                if (present_references[j].value == references[i].value) {
-                                        for (int x = 0; x < 4; x++)
-                                                *(buffer + references[i].position + j) = ((present_references[j].position) >> (8 * x)) & 0xFF;
-                         
-                                        break;
-                                }
-                        }
-                }
-
-                for (int i = 0; i < 7; i++)
-                        *(buffer + 7 + i) = ((((uintptr_t)&buffer) + position) >> (8 * i)) & 0xFF;
-        }
-
-
-        for (int i = 0; i < position + data_position; i++)
+        for (int i = 0; i < position; i++)
                 printf("%02X ", *(buffer + i));
         printf("\n");
 
         ret->func = buffer;
-        ret->size = position;
-
-        free(data_buffer);
+        ret->data = data_buffer;
+        ret->code_size = position;
+        ret->data_size = data_position;
 
         return *ret;
 }
