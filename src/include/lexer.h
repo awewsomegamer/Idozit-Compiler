@@ -55,6 +55,19 @@ static const char *T_FUNC_NAMES[] = {
         [T_FUNC_DERIVATIVE] = "DERIVATIVE"
 };
 
+struct symbol {
+        char* name;
+        double value;
+};
+typedef struct symbol symbol_t;
+
+static const symbol_t STANDARD_SYMBOLS[] = {
+        {"PI", PI},
+        {"e", EULERS_CONSTANT},
+        {"E", EULERS_NUMBER},
+};
+
+
 int lex();
 
 #endif

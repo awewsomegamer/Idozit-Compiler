@@ -119,7 +119,7 @@ int lex(token_t *token)
 			token->type = T_VAR;
 			token->value = i;
 			return 1;
-			}
+		}
 
 		// Is this string one of the functions
 		for (int i = 0; i < T_FUNC_MAX; i++)
@@ -154,6 +154,18 @@ int lex(token_t *token)
 			token->value = atoi(string);
 
 			return 1;
+		}
+
+		// Check if the string is apart of the constants list, if so
+		// substitute in the number for it
+		for (int i = 0; i < sizeof(STANDARD_SYMBOLS) / sizeof(STANDARD_SYMBOLS[0]); i++) {
+			if (strcmp(string, STANDARD_SYMBOLS[i].name) == 0) {
+				message(MESSAGE_DEBUG, "Found mathematical symbol %s\n", string);
+
+				token->type = T_NUMBER;
+				token->value = STANDARD_SYMBOLS[i].value;
+				return 1;
+			}
 		}
 	}
 

@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 int main() {
-        code_block_t code = compile(expression("5.1 + 5.2 * 5.1 / 5.2 - 1"));
+        code_block_t code = compile(expression("E * e * PI"));
         
 	printf("Results in %f\n", run(code));
 
