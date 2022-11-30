@@ -8,7 +8,11 @@ do_the_float:
 
         movsd xmm8, qword [float_number]
 
+        movsd xmm0, qword [0xABAB]
+
         cvtsi2sd xmm0, rax
+
+        mov rcx, 0xAABBAABBAABB
 
         ;movq rax, xmm0
         ;movq xmm0, rax

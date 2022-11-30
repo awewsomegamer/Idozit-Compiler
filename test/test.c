@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 int main() {
-        code_block_t code = compile(expression("5 + 5 + 6"));
+        code_block_t code = compile(expression("5.1 + 5"));
         
         void* buf;
 	buf = mmap(0, code.size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
