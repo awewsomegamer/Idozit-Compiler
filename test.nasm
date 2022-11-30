@@ -26,6 +26,8 @@ do_the_float:
         addsd xmm0, xmm1
         pop rbp
 
+        mov rax, $
+
         ret
 
 float_number:
