@@ -24,6 +24,9 @@ do_the_float:
         mov rax, 0x5
         cvtsi2sd xmm1, rax
         addsd xmm0, xmm1
+
+        movsd xmm1, qword [rbp-0x1000000]
+
         pop rbp
 
         mov rax, $

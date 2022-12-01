@@ -178,7 +178,7 @@ struct code_block
     uint8_t *func;
     uint8_t *data;
     size_t code_size;
-    size_t data_size
+    size_t data_size;
 };
 typedef struct code_block code_block_t;
 
@@ -205,7 +205,7 @@ typedef struct compiler_params compiler_params_t;
  * The function will return a context structure which is
  * used in compilation
  */
-context_t expression(const char *form, ...);
+context_t expression(const char *form, char **variables);
 
 /* code_block_t compile(tree_code_t *tree) :
  * Compile the given context using the set generator
@@ -213,7 +213,7 @@ context_t expression(const char *form, ...);
  */
 code_block_t compile(context_t ctx);
 
-double run(code_block_t code, ...);
+double run(code_block_t code, double *variables);
 
 /* tree_to(tree_code_t *tree, const char *language) :
  * Takes the generated tree, tree, and converts it into a given language,

@@ -94,6 +94,28 @@ int evaluate(tree_code_t *tree) {
                 return reg;
         }
 
+        case T_VAR: {
+                int reg = allocate_reg();
+
+                append_byte(0xF2);
+                
+                if (reg >= 8) {
+                        append_byte(0x44);
+                }
+
+                append_byte(0x0F);
+                append_byte(0x10);
+                append_byte(0x8D);
+                
+                uint32_t offset = -((uint32_t)tree->value * 8 + 0x10);
+                
+                for (int i = 0; i < 4; i++) {
+                        append_byte(((offset) >> (8 * i)) & 0xFF);
+                }
+
+                return reg;
+        }
+
         case T_ADD:
                 append_byte(0xF2);
 
@@ -220,9 +242,9 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         // Fill data buffer and get present reference list
         fill_references();
 
-        for (int i = 0; i < position; i++)
-                printf("%02X ", *(buffer + i));
-        printf("\n");
+        // for (int i = 0; i < position; i++)
+        //         printf("%02X ", *(buffer + i));
+        // printf("\n");
 
         ret->func = buffer;
         ret->data = data_buffer;

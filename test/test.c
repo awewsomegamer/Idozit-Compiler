@@ -4,9 +4,11 @@
 #include <unistd.h>
 
 int main() {
-        code_block_t code = compile(expression("E * e * PI"));
-        
-	printf("Results in %f\n", run(code));
+        char* variables[] = { "x" };
+        code_block_t code = compile(expression("2 * x + 1", variables));
+
+        double var_val[] = { 1 };
+	printf("Results in %f\n", run(code, var_val));
 
         return 0;
 }
