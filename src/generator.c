@@ -105,9 +105,9 @@ int evaluate(tree_code_t *tree) {
 
                 append_byte(0x0F);
                 append_byte(0x10);
-                append_byte(0x8D);
+                append_byte(0x85 + ((reg % 8) * 8));
                 
-                uint32_t offset = -((uint32_t)tree->value * 8 + 0x10);
+                uint32_t offset = ((uint32_t)tree->value * 8 + 0x18);
                 
                 for (int i = 0; i < 4; i++) {
                         append_byte(((offset) >> (8 * i)) & 0xFF);
