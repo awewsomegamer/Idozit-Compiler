@@ -13,7 +13,8 @@ int data_position = 0;
         buffer = realloc(buffer, ++position); \
         *(buffer + position - 1) = b;
 
-struct reference {
+struct reference
+{
         double value;
         uint64_t position;
 };
@@ -21,7 +22,8 @@ struct reference {
 struct reference* references;
 int reference_count = 0;
 
-void insert_reference(double value, uint64_t position) {
+void insert_reference(double value, uint64_t position)
+{
         references = realloc(references, sizeof(struct reference) * (++reference_count));
 
         references[reference_count - 1].position = position;
@@ -30,7 +32,8 @@ void insert_reference(double value, uint64_t position) {
 
 int xmm_reg[16];
 
-int allocate_reg() {
+int allocate_reg()
+{
         for (int i = 0; i < 16; i++)
                 if (xmm_reg[i] != 1) {
                         xmm_reg[i] = 1;
@@ -41,11 +44,13 @@ int allocate_reg() {
                         
 }
 
-void free_reg(int reg) {
+void free_reg(int reg)
+{
         xmm_reg[reg] = 0;
 }
 
-int evaluate(tree_code_t *tree) {
+int evaluate(tree_code_t *tree)
+{
         int left = 0, right = 0;
 
         if (tree->left != NULL) left = evaluate(tree->left);
@@ -175,12 +180,18 @@ int evaluate(tree_code_t *tree) {
                 free_reg(right);
 
                 return left;
+
+        case T_EXPONENT:
+                
+
+                return left;
         }
 
         return 0;
 }
 
-void fill_references() {
+void fill_references()
+{
         struct reference* present_references = malloc(sizeof(struct reference));
         int present_reference_count = 0;
 
@@ -198,7 +209,6 @@ void fill_references() {
 
                 uint64_t bytes_double;
                 memcpy(&bytes_double, &references[i].value, sizeof(uint64_t));
-                printf("%02X\n", bytes_double);
 
                 for (int j = 0; j < 8; j++) {
                         data_buffer = realloc(data_buffer, ++data_position);
@@ -209,14 +219,13 @@ void fill_references() {
                 
                 FILL_REFERENCE:
 
-                printf("%X B\n", &buffer);
-
                 for (int j = 0; j < 4; j++)
                         *(buffer + references[i].position + j) = ((present_references[present_reference_idx].position) >> (8 * j)) & 0xFF;
         }
 }
 
-code_block_t default_x86_64_generator(tree_code_t *tree) {
+code_block_t default_x86_64_generator(tree_code_t *tree)
+{
         code_block_t* ret = malloc(sizeof(code_block_t));
         buffer = malloc(1);
         data_buffer = malloc(1);
@@ -239,12 +248,8 @@ code_block_t default_x86_64_generator(tree_code_t *tree) {
         // RET
         append_byte(0xC3);
 
-        // Fill data buffer and get present reference list
+        // Fill in the missing references
         fill_references();
-
-        // for (int i = 0; i < position; i++)
-        //         printf("%02X ", *(buffer + i));
-        // printf("\n");
 
         ret->func = buffer;
         ret->data = data_buffer;

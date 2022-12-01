@@ -8,6 +8,7 @@
 token_t *current_token = NULL;
 token_t *last_token = NULL;
 
+// Functions to create nodes
 tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t *right)
 {
         tree_code_t *node = malloc(sizeof(tree_code_t));
@@ -22,7 +23,7 @@ tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t 
 
 #define create_empty(type, value) create_node(type, value, NULL, NULL)
 
-/* uint8_t accept(uint8_t type)
+/* uint8_t accept(uint8_t type) :
  * Is the current token's type == the given type?
  *
  * Yes: Move the current token to the last token, move to the next token, return 1
@@ -41,7 +42,7 @@ uint8_t accept(uint8_t type)
         return 0;
 }
 
-/* void expect(uint8_t type)
+/* void expect(uint8_t type) :
  * Expect the token type, type. If the accept
  * function returns 1, move on, otherwise something
  * is wrong with the program.

@@ -167,6 +167,8 @@ int lex(token_t *token)
 				return 1;
 			}
 		}
+
+		message(MESSAGE_FATAL, "Unidentified string \"%s\"\n", string);
 	}
 
 	return 0;
