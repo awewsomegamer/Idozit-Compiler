@@ -1,6 +1,7 @@
 #include <generator.h>
 #include <lexer.h>
 #include <string.h>
+#include <messages.h>
 
 uint8_t* buffer = NULL;
 uint8_t* data_buffer = NULL;
@@ -11,9 +12,6 @@ int data_position = 0;
 #define append_byte(b) \
         buffer = realloc(buffer, ++position); \
         *(buffer + position - 1) = b;
-
-int reg = 0;
-int xmm_reg = 0;
 
 struct reference {
         double value;
@@ -30,6 +28,23 @@ void insert_reference(double value, uint64_t position) {
         references[reference_count - 1].value = value;
 }
 
+int xmm_reg[16];
+
+int allocate_reg() {
+        for (int i = 0; i < 16; i++)
+                if (xmm_reg[i] != 1) {
+                        xmm_reg[i] = 1;
+                        return i;
+                }
+
+        message(MESSAGE_FATAL, "No registers free\n");
+                        
+}
+
+void free_reg(int reg) {
+        xmm_reg[reg] = 0;
+}
+
 int evaluate(tree_code_t *tree) {
         int left = 0, right = 0;
 
@@ -37,7 +52,7 @@ int evaluate(tree_code_t *tree) {
         if (tree->right != NULL) right = evaluate(tree->right);
 
         switch (tree->type) {
-        case T_INT:
+        case T_INT: {
                 append_byte(0x48);
                 append_byte(0xC7);
                 append_byte(0xC0);
@@ -49,32 +64,35 @@ int evaluate(tree_code_t *tree) {
                         append_byte(((value >> (8 * i)) & 0xFF));
                 }
                 
+                int reg = allocate_reg();
+
                 append_byte(0xF2);
-                append_byte(0x48 + ((xmm_reg >= 8) * 4));
+                append_byte(0x48 + ((reg >= 8) * 4));
                 append_byte(0x0F);
                 append_byte(0x2A);
-                append_byte(0xC0 + ((xmm_reg % 8) * 8));
-                xmm_reg++;
+                append_byte(0xC0 + ((reg % 8) * 8));
 
-                return xmm_reg - 1;
+                return reg;
+        }
 
-        case T_NUMBER:
+        case T_NUMBER: {
                 append_byte(0xF2);
                 append_byte(0x0F);
 
-                if (xmm_reg >= 8) {
+                int reg = allocate_reg();
+
+                if (reg >= 8) {
                         append_byte(0x44);
                 }
 
                 append_byte(0x10);
-                append_byte(0x04 + ((xmm_reg % 8) * 8));
+                append_byte(0x04 + ((reg % 8) * 8));
                 append_byte(0x0D);
                 insert_reference(tree->value, position);
                 for(int i = 0; i < 4; i++) append_byte(0x00);
 
-                xmm_reg++;
-
-                return xmm_reg - 1;
+                return reg;
+        }
 
         case T_ADD:
                 append_byte(0xF2);
@@ -86,6 +104,8 @@ int evaluate(tree_code_t *tree) {
                 append_byte(0x0F);
                 append_byte(0x58);
                 append_byte(0xC0 + right + ((left % 8) * 8));  
+
+                free_reg(right);
 
                 return left;
 
@@ -100,6 +120,8 @@ int evaluate(tree_code_t *tree) {
                 append_byte(0x5C);
                 append_byte(0xC0 + right + ((left % 8) * 8));  
 
+                free_reg(right);
+
                 return left;
 
         case T_MUL:
@@ -113,6 +135,8 @@ int evaluate(tree_code_t *tree) {
                 append_byte(0x59);
                 append_byte(0xC0 + right + ((left % 8) * 8));
 
+                free_reg(right);
+
                 return left;
 
         case T_DIV:
@@ -125,6 +149,8 @@ int evaluate(tree_code_t *tree) {
                 append_byte(0x0F);
                 append_byte(0x5E);
                 append_byte(0xC0 + right + ((left % 8) * 8));
+
+                free_reg(right);
 
                 return left;
         }
