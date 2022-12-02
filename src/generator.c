@@ -7,9 +7,10 @@ uint8_t* buffer = NULL;
 uint8_t* data_buffer = NULL;
 
 int position = 0;
+int code_size = 0;
 int data_position = 0;
 
-#define append_byte(b) \
+#define append_byte(b)                        \
         buffer = realloc(buffer, ++position); \
         *(buffer + position - 1) = b;
 
@@ -75,7 +76,7 @@ double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
 
         case T_VAR:
                 *flags |= 1;
-                return 0;
+                return tree->value;
 
         case T_ADD:
                 return left + right;
@@ -106,24 +107,86 @@ double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
 
 int evaluate(tree_code_t *tree)
 {       
-        int left = 0, right = 0;
+        uint8_t flags = 0;
+        double solution = numerical_evaluation(tree, &flags);
 
-        if (tree->left != NULL) left = evaluate(tree->left);
-        if (tree->right != NULL) right = evaluate(tree->right);
+        if ((flags & 1) == 0) {
+                // Found numeric solution
+
+                tree->value = solution;
+
+                if (((flags >> 1) & 1) == 0) {
+                        // Solution is an integer
+                        goto INTEGER_CONSTANT_GENERATION;
+                } else {
+                        // Solution is a double
+                        goto DOUBLE_CONSTANT_GENERATION;
+                }
+        }
+
+        // Did not find a numeric solution
+
+        int left = 0, right = 0;
+        double vleft = 0, vright = 0;
+        uint8_t left_info = 0, right_info = 0;
+
+        int start_pointer = position;
+
+        if (tree->left != NULL) {
+                left = evaluate(tree->left);
+                vleft = numerical_evaluation(tree->left, &left_info);
+        }
+
+        int left_add_pointer = position;
+
+        if (tree->right != NULL){
+                right = evaluate(tree->right);
+                vright = numerical_evaluation(tree->right, &right_info);
+        }
+
+        int right_add_pointer = position;
+
+        // Calculate the difference, error, between the code generated for the
+        // left branch and code generated for the right branch
+        int lr_error = 0;
+        if (left_add_pointer - start_pointer == right_add_pointer - left_add_pointer)
+                for (int i = start_pointer; i < left_add_pointer - start_pointer; i++)
+                        if (*(buffer + i) != *(buffer + left_add_pointer + i))
+                                lr_error++;
+        
+        // If the left branch and right branch values are the same, or the error
+        // between them is below or 1 byte, then remove right branch and use the
+        // left branch
+        if (vleft == vright || lr_error <= 1) {
+                position = left_add_pointer - 1;
+                uint8_t* new_buffer = malloc(left_add_pointer);
+                memcpy(new_buffer, buffer, left_add_pointer);
+
+                free(buffer);
+                buffer = new_buffer;
+
+                free_reg(right);
+                right = left;
+        }
 
         switch (tree->type) {
         case T_INT: {
-                append_byte(0x48);
-                append_byte(0xC7);
-                append_byte(0xC0);
-                
-                // if mov reg, 0, use xor reg, reg
-                // if mov rax, imm use mov rax op
-                for (int i = 0; i < 4; i++) {
-                        int value = (int)tree->value;
-                        append_byte(((value >> (8 * i)) & 0xFF));
+                INTEGER_CONSTANT_GENERATION:
+                if ((int)tree->value != 0) {
+                        append_byte(0x48);
+                        append_byte(0xC7);
+                        append_byte(0xC0);
+        
+                        for (int i = 0; i < 4; i++) {
+                                int value = (int)tree->value;
+                                append_byte(((value >> (8 * i)) & 0xFF));
+                        }
+                } else {
+                        append_byte(0x48);
+                        append_byte(0x31);
+                        append_byte(0xC0);
                 }
-                
+
                 int reg = allocate_reg();
 
                 append_byte(0xF2);
@@ -136,6 +199,7 @@ int evaluate(tree_code_t *tree)
         }
 
         case T_NUMBER: {
+                DOUBLE_CONSTANT_GENERATION:
                 append_byte(0xF2);
                 append_byte(0x0F);
 
@@ -187,7 +251,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x58);
                 append_byte(0xC0 + right + ((left % 8) * 8));  
 
-                free_reg(right);
+                if (left != right) free_reg(right);
 
                 return left;
 
@@ -202,7 +266,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x5C);
                 append_byte(0xC0 + right + ((left % 8) * 8));  
 
-                free_reg(right);
+                if (left != right) free_reg(right);
 
                 return left;
 
@@ -217,7 +281,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x59);
                 append_byte(0xC0 + right + ((left % 8) * 8));
 
-                free_reg(right);
+                if (left != right) free_reg(right);
 
                 return left;
 
@@ -232,7 +296,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x5E);
                 append_byte(0xC0 + right + ((left % 8) * 8));
 
-                free_reg(right);
+                if (left != right) free_reg(right);
 
                 return left;
 
