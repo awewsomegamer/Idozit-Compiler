@@ -49,8 +49,63 @@ void free_reg(int reg)
         xmm_reg[reg] = 0;
 }
 
+// Flags:
+// Bit 0: Set = Cannot calculate (variable)
+// Bit 1: Set = Return should be seen as an integer
+// Bit 2:
+// Bit 3:
+// Bit 4:
+// Bit 5:
+// Bit 6:
+// Bit 7:
+double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
+        double left = 0, right = 0;
+        if (tree->left != NULL) left = numerical_evaluation(tree->left, flags);
+        if (tree->right != NULL) right = numerical_evaluation(tree->right, flags);
+
+        // Return if variable is found
+        if ((*flags & 1) == 1)
+                return 0;
+
+        switch (tree->type) {
+        case T_NUMBER:
+                *flags |= 1 << 1;
+        case T_INT:
+                return tree->value;
+
+        case T_VAR:
+                *flags |= 1;
+                return 0;
+
+        case T_ADD:
+                return left + right;
+
+        case T_SUB:
+                return left - right;
+
+        case T_MUL:
+                return left * right;
+
+        case T_DIV: 
+                return left / right;
+
+        case T_EXPONENT: {
+                double res = 1;
+                
+                if (right >= 0)
+                        for (int i = 0; i < right; i++)
+                                res *= left;
+                else
+                        for (int i = 0; i < right; i++)
+                                res /= left;
+
+                return res;
+        }
+        }
+}
+
 int evaluate(tree_code_t *tree)
-{
+{       
         int left = 0, right = 0;
 
         if (tree->left != NULL) left = evaluate(tree->left);
@@ -250,6 +305,10 @@ code_block_t default_x86_64_generator(tree_code_t *tree)
 
         // Fill in the missing references
         fill_references();
+
+        uint8_t f = 0;
+        double a = numerical_evaluation(tree, &f);
+        printf("%f %X\n", a, f);
 
         ret->func = buffer;
         ret->data = data_buffer;

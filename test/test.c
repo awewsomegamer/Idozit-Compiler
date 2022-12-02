@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 int main() {
-        code_block_t code = compile(expression("x * x * PI", 1, "x"));
+        code_block_t code = compile(expression("5 + 5", 1, "x"));
 	printf("Results in %f\n", run(code, 16.0));
 
         return 0;
