@@ -147,9 +147,6 @@ int evaluate(tree_code_t *tree)
         int right_add_pointer = position;
 
 
-        /* 
-        -- Interesting optimization, implement later --
-
         // Calculate the difference, error, between the code generated for the
         // left branch and code generated for the right branch
         int lr_error = 0;
@@ -161,18 +158,27 @@ int evaluate(tree_code_t *tree)
         // If the left branch and right branch values are the same, or the error
         // between them is below or 1 byte, then remove right branch and use the
         // left branch
-        if (vleft == vright || lr_error <= 1) {
+        if (vleft == vright) {
                 printf("%d %d\n", position, left_add_pointer);
 
                 uint8_t* new_buffer = malloc(left_add_pointer - 1);
                 memcpy(new_buffer, buffer, left_add_pointer - 1);
-                free(buffer);
+                for (int i = 0; i < left_add_pointer; i++)
+                        printf("%02X ", *(new_buffer + i));
+
+                printf("\n");
+
+                for (int i = 0; i < position; i++)
+                        printf("%02X ", *(buffer + i));
+
+                printf("\n");
+
+                // free(buffer);
                 free_reg(right);
                 right = left;
-                buffer = new_buffer;
-                position = left_add_pointer;
+                // buffer = new_buffer;
+                // position = left_add_pointer;
         }
-        */ 
 
         switch (tree->type) {
         case T_INT: {
