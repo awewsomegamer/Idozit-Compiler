@@ -147,38 +147,38 @@ int evaluate(tree_code_t *tree)
         int right_add_pointer = position;
 
 
-        // Calculate the difference, error, between the code generated for the
-        // left branch and code generated for the right branch
-        int lr_error = 0;
-        if (left_add_pointer - start_pointer == right_add_pointer - left_add_pointer)
-                for (int i = start_pointer; i < left_add_pointer - start_pointer; i++)
-                        if (*(buffer + i) != *(buffer + left_add_pointer + i))
-                                lr_error++;
+        // // Calculate the difference, error, between the code generated for the
+        // // left branch and code generated for the right branch
+        // int lr_error = 0;
+        // if (left_add_pointer - start_pointer == right_add_pointer - left_add_pointer)
+        //         for (int i = start_pointer; i < left_add_pointer - start_pointer; i++)
+        //                 if (*(buffer + i) != *(buffer + left_add_pointer + i))
+        //                         lr_error++;
         
-        // If the left branch and right branch values are the same, or the error
-        // between them is below or 1 byte, then remove right branch and use the
-        // left branch
-        if (vleft == vright) {
-                printf("%d %d\n", position, left_add_pointer);
+        // // If the left branch and right branch values are the same, or the error
+        // // between them is below or 1 byte, then remove right branch and use the
+        // // left branch
+        // if (vleft == vright) {
+        //         printf("%d %d\n", position, left_add_pointer);
 
-                uint8_t* new_buffer = malloc(left_add_pointer - 1);
-                memcpy(new_buffer, buffer, left_add_pointer - 1);
-                for (int i = 0; i < left_add_pointer; i++)
-                        printf("%02X ", *(new_buffer + i));
+        //         uint8_t* new_buffer = malloc(left_add_pointer - 1);
+        //         memcpy(new_buffer, buffer, left_add_pointer - 1);
+        //         for (int i = 0; i < left_add_pointer; i++)
+        //                 printf("%02X ", *(new_buffer + i));
 
-                printf("\n");
+        //         printf("\n");
 
-                for (int i = 0; i < position; i++)
-                        printf("%02X ", *(buffer + i));
+        //         for (int i = 0; i < position; i++)
+        //                 printf("%02X ", *(buffer + i));
 
-                printf("\n");
+        //         printf("\n");
 
-                // free(buffer);
-                free_reg(right);
-                right = left;
-                // buffer = new_buffer;
-                // position = left_add_pointer;
-        }
+        //         // free(buffer);
+        //         free_reg(right);
+        //         right = left;
+        //         // buffer = new_buffer;
+        //         // position = left_add_pointer;
+        // }
 
         switch (tree->type) {
         case T_INT: {

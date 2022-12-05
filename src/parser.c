@@ -70,6 +70,52 @@ tree_code_t *exponent(tree_code_t *ret)
         return exponent_ret;
 }
 
+tree_code_t* find_node(tree_code_t* tree, int type, int value) {
+        if (tree != NULL && tree->type == type && tree->value == value)
+                return tree;
+
+        if (tree->left != NULL) return find_node(tree->left, type, value);
+        if (tree->right != NULL) return find_node(tree->right, type, value);
+
+        return NULL;
+}
+
+void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
+        switch (function) {
+        case T_FUNC_DERIVATIVE:
+                // 2 * x = 2
+                // 2 * 2x = 4
+                // 2 * x^2 = 4 * x
+                // 2 * x^3 = 6 * x^2
+                // What we want to do is go down the ret tree
+                // and apply this rule, the variable gets toned
+                // down, and if there is a multiplication or divisio
+                // in common, then it will be applied.
+
+                if (tree->type == T_MUL || tree->type == T_DIV) {
+                        tree_code_t* var;
+                        
+                        // While you can find the respected variable:
+                        // Get the pointer to the variable (done)
+                        // Go to its parent and do the above if statement on it
+                        // If it passes the if statement then derive it
+                        // Finally collapse back up to caller
+                        // Figure out a way to remove random constants
+                        // which have no connection to the respected
+                        // variable. "x + 2" 2 would be removed
+
+                        do {
+                                var = find_node(tree, T_VAR, respect_to);
+                        } while (var != NULL);
+                        
+                }
+
+
+
+                break;
+        }
+}
+
 tree_code_t *term()
 {
         tree_code_t *ret = create_empty(0, 0);
@@ -111,15 +157,20 @@ tree_code_t *term()
 
                 message(MESSAGE_DEBUG, "FUNCTION\n");
 
+                int func = last_token->value;
+
                 int degree = 1;
                 if (accept(T_NUMBER))
                         degree = last_token->value;
                 
+                expect(T_VAR);
+                int respect_to = last_token->value;
+
                 expect(T_LPAREN);
                 ret = addition();
                 expect(T_RPAREN);
-                ret->value = degree;
-                ret->type = T_IDENT;
+                
+                apply_function(func, degree, respect_to, ret); 
 
                 if (accept(T_EXPONENT)) return exponent(ret);
 
