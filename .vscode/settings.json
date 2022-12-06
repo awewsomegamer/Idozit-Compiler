@@ -3,6 +3,9 @@
                 "parser.h": "c",
                 "stdlib.h": "c",
                 "stdio.h": "c",
-                "unistd.h": "c"
+                "unistd.h": "c",
+                "mman.h": "c",
+                "string.h": "c",
+                "design1.h": "c"
         }
 }

@@ -151,6 +151,7 @@ struct tree_code
 
     struct tree_code *left;
     struct tree_code *right;
+    struct tree_code *parent;
 };
 typedef struct tree_code tree_code_t;
 

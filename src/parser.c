@@ -58,12 +58,16 @@ void expect(uint8_t type)
 // Recursive Descent Parser:
 tree_code_t *addition();
 tree_code_t *term();
+double evaluate_tree(tree_code_t *head);
 
 tree_code_t *exponent(tree_code_t *ret)
 {
         tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
         exponent_ret->left = ret;
         exponent_ret->right = term();
+
+        ret->parent = exponent_ret;
+        exponent_ret->right->parent = exponent_ret;
 
         message(MESSAGE_DEBUG, "EXPONENT\n");
         
@@ -92,23 +96,51 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                 // down, and if there is a multiplication or divisio
                 // in common, then it will be applied.
 
-                if (tree->type == T_MUL || tree->type == T_DIV) {
-                        tree_code_t* var;
-                        
-                        // While you can find the respected variable:
-                        // Get the pointer to the variable (done)
-                        // Go to its parent and do the above if statement on it
-                        // If it passes the if statement then derive it
-                        // Finally collapse back up to caller
-                        // Figure out a way to remove random constants
-                        // which have no connection to the respected
-                        // variable. "x + 2" 2 would be removed
+                // We basically want to look at every variable
+                // And apply the derivative formula
 
-                        do {
-                                var = find_node(tree, T_VAR, respect_to);
-                        } while (var != NULL);
+                tree_code_t* var, *parent, *new_node;
+                
+                // While you can find the respected variable:
+                // Get the pointer to the variable (done)
+                // Go to its parent and do the above if statement on it
+                // If it passes the if statement then derive it
+                // Finally collapse back up to caller
+                // Figure out a way to remove random constants
+                // which have no connection to the respected
+                // variable. "x + 2" 2 would be removed
+
+
+                // do {
+                        var = find_node(tree, T_VAR, respect_to);
+                        parent = var->parent;
+                        new_node = create_empty(0, 0);
+
+                        // Check if parent node is a ^
+                        // I don't yet know how to evaluate
+                        // derivateives of variables which use
+                        // another variable as their power
+                        // so for now all it will be is just numbers
+
+
+                        if (var->parent->type == T_EXPONENT) {
+                                int value = evaluate_tree(parent->right);
+                                
+                                parent->type = T_MUL;
+                                parent->left = new_node;
+                                parent->right = create_empty(T_INT, value);
+
+                                new_node->left = create_empty(T_VAR, var->value);
+                                new_node->right = create_empty(T_INT, value - 1);
+                        } else if (var->parent->type == T_MUL) {
+
+                        } else {
+
+                        }
+
+
+                // } while (var != NULL);
                         
-                }
 
 
 
@@ -160,7 +192,7 @@ tree_code_t *term()
                 int func = last_token->value;
 
                 int degree = 1;
-                if (accept(T_NUMBER))
+                if (accept(T_INT))
                         degree = last_token->value;
                 
                 expect(T_VAR);
@@ -196,6 +228,9 @@ tree_code_t *multiplication()
         right = multiplication();
 
         tree_code_t *tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
+        
+        left->parent = tree;
+        right->parent = tree;
 
         return tree;
 }
@@ -218,6 +253,9 @@ tree_code_t *addition()
         right = addition();
 
         tree_code_t *tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
+        
+        left->parent = tree;
+        right->parent = tree;
 
         return tree;
 }

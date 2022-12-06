@@ -139,7 +139,9 @@ int evaluate(tree_code_t *tree)
 
         int left_add_pointer = position;
 
-        if (tree->right != NULL){
+        printf("%d\n", tree->type);
+
+        if (tree->right != NULL && tree->type != T_EXPONENT){
                 right = evaluate(tree->right);
                 vright = numerical_evaluation(tree->right, &right_info);
         }
@@ -312,7 +314,18 @@ int evaluate(tree_code_t *tree)
                 return left;
 
         case T_EXPONENT:
-                
+                uint8_t flags = 0;
+                for (int i = 0; i < numerical_evaluation(tree->right, &flags); i++) {
+                        append_byte(0xF2);
+
+                        if (left >= 8) {
+                                append_byte(0x44);
+                        }
+
+                        append_byte(0x0F);
+                        append_byte(0x59);
+                        append_byte(0xC0 + ((left % 8) * 8));
+                }
 
                 return left;
         }
