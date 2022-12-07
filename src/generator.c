@@ -315,7 +315,8 @@ int evaluate(tree_code_t *tree)
 
         case T_EXPONENT:
                 uint8_t flags = 0;
-                for (int i = 0; i < numerical_evaluation(tree->right, &flags); i++) {
+                int repetitions = numerical_evaluation(tree->right, &flags) - 1;
+                for (int i = 0; i < repetitions; i++) {
                         append_byte(0xF2);
 
                         if (left >= 8) {

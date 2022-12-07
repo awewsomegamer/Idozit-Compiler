@@ -8,7 +8,7 @@
 token_t *current_token = NULL;
 token_t *last_token = NULL;
 
-// Functions to create nodes
+// Functions to manipulate nodes
 tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t *right)
 {
         tree_code_t *node = malloc(sizeof(tree_code_t));
@@ -22,6 +22,12 @@ tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t 
 }
 
 #define create_empty(type, value) create_node(type, value, NULL, NULL)
+
+// Recursively free tree
+void free_tree(tree_code_t* tree) {
+
+}
+
 
 /* uint8_t accept(uint8_t type) :
  * Is the current token's type == the given type?
@@ -125,11 +131,23 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
 
                         if (var->parent->type == T_EXPONENT) {
                                 int value = evaluate_tree(parent->right);
-                                
+                                if (value == 0) {
+                                        parent->type = T_INT;
+                                        parent->value = 0;
+                                        parent->left = NULL;
+                                        parent->right = NULL;
+
+                                        // Create a free_tree function to recursively
+                                        // free a tree
+
+                                        return;
+                                }
+
                                 parent->type = T_MUL;
                                 parent->left = new_node;
                                 parent->right = create_empty(T_INT, value);
 
+                                new_node->type = T_EXPONENT;
                                 new_node->left = create_empty(T_VAR, var->value);
                                 new_node->right = create_empty(T_INT, value - 1);
                         } else if (var->parent->type == T_MUL) {
