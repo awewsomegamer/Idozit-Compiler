@@ -34,6 +34,7 @@ static const char *TOKEN_NAMES[] = {
         [T_RPAREN] =   "Left Parenthesis",
         [T_EXPONENT] = "Exponent", 
         [T_NUMBER] =   "Number",
+        [T_INT] =      "Integer",
         [T_VAR] =      "Variable",
         [T_IDENT] =    "Identifier"
 };

@@ -148,6 +148,7 @@ struct tree_code
 {
     double value;
     uint8_t type;
+    uint64_t parser_mark;
 
     struct tree_code *left;
     struct tree_code *right;

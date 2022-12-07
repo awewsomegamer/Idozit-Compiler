@@ -9,7 +9,7 @@ token_t *current_token = NULL;
 token_t *last_token = NULL;
 
 // Functions to manipulate nodes
-tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t *right)
+tree_code_t* create_node(int type, double value, uint64_t parser_mark, tree_code_t *left, tree_code_t *right)
 {
         tree_code_t *node = malloc(sizeof(tree_code_t));
 
@@ -17,11 +17,12 @@ tree_code_t* create_node(int type, double value, tree_code_t *left, tree_code_t 
         node->value = value;
         node->left = left;
         node->right = right;
+        node->parser_mark = parser_mark;
 
         return node;
 }
 
-#define create_empty(type, value) create_node(type, value, NULL, NULL)
+#define create_empty(type, value) create_node(type, value, 0, NULL, NULL)
 
 // Recursively free tree
 void free_tree(tree_code_t* tree) {
@@ -80,12 +81,21 @@ tree_code_t *exponent(tree_code_t *ret)
         return exponent_ret;
 }
 
-tree_code_t* find_node(tree_code_t* tree, int type, int value) {
-        if (tree != NULL && tree->type == type && tree->value == value)
+tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parser_mark) {
+        printf("%s %f %d\n", TOKEN_NAMES[tree->type], tree->value, tree->parser_mark);
+        printf("%s %f %d\n\n", TOKEN_NAMES[type], value, parser_mark);
+
+        if (tree != NULL && tree->type == type && tree->value == value && tree->parser_mark == parser_mark)
                 return tree;
 
-        if (tree->left != NULL) return find_node(tree->left, type, value);
-        if (tree->right != NULL) return find_node(tree->right, type, value);
+        tree_code_t *branch = NULL;
+
+        if (tree->left != NULL) branch = find_node(tree->left, type, value, parser_mark);
+        if (branch != NULL) return branch;
+        
+        if (tree->right != NULL) branch = find_node(tree->right, type, value, parser_mark);
+        if (branch != NULL) return branch;
+        
 
         return NULL;
 }
@@ -93,44 +103,18 @@ tree_code_t* find_node(tree_code_t* tree, int type, int value) {
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
         switch (function) {
         case T_FUNC_DERIVATIVE:
-                // 2 * x = 2
-                // 2 * 2x = 4
-                // 2 * x^2 = 4 * x
-                // 2 * x^3 = 6 * x^2
-                // What we want to do is go down the ret tree
-                // and apply this rule, the variable gets toned
-                // down, and if there is a multiplication or divisio
-                // in common, then it will be applied.
-
-                // We basically want to look at every variable
-                // And apply the derivative formula
-
                 tree_code_t* var, *parent, *new_node;
-                
-                // While you can find the respected variable:
-                // Get the pointer to the variable (done)
-                // Go to its parent and do the above if statement on it
-                // If it passes the if statement then derive it
-                // Finally collapse back up to caller
-                // Figure out a way to remove random constants
-                // which have no connection to the respected
-                // variable. "x + 2" 2 would be removed
+                do {
+                        var = find_node(tree, T_VAR, respect_to, 0);
+                        
+                        if (var == NULL) break;
 
-
-                // do {
-                        var = find_node(tree, T_VAR, respect_to);
                         parent = var->parent;
                         new_node = create_empty(0, 0);
 
-                        // Check if parent node is a ^
-                        // I don't yet know how to evaluate
-                        // derivateives of variables which use
-                        // another variable as their power
-                        // so for now all it will be is just numbers
-
-
-                        if (var->parent->type == T_EXPONENT) {
+                        if (parent->type == T_EXPONENT) {
                                 int value = evaluate_tree(parent->right);
+
                                 if (value == 0) {
                                         parent->type = T_INT;
                                         parent->value = 0;
@@ -149,19 +133,15 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
 
                                 new_node->type = T_EXPONENT;
                                 new_node->left = create_empty(T_VAR, var->value);
+                                new_node->left->parser_mark = 1;
                                 new_node->right = create_empty(T_INT, value - 1);
-                        } else if (var->parent->type == T_MUL) {
+                        } else if (parent->type == T_MUL) {
 
                         } else {
 
                         }
-
-
-                // } while (var != NULL);
-                        
-
-
-
+                } while (var != NULL);
+                
                 break;
         }
 }
@@ -194,7 +174,7 @@ tree_code_t *term()
         } else if (accept(T_VAR)) {
                 // Variable
 
-                message(MESSAGE_DEBUG, "VARIABLE\n");
+                message(MESSAGE_DEBUG, "VARIABLE %f\n", last_token->value);
                 
                 ret->type = T_VAR;
                 ret->value = last_token->value;
@@ -245,7 +225,7 @@ tree_code_t *multiplication()
 
         right = multiplication();
 
-        tree_code_t *tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, left, right);
+        tree_code_t *tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, 0, left, right);
         
         left->parent = tree;
         right->parent = tree;
@@ -270,7 +250,7 @@ tree_code_t *addition()
 
         right = addition();
 
-        tree_code_t *tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, left, right);
+        tree_code_t *tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, 0, left, right);
         
         left->parent = tree;
         right->parent = tree;
