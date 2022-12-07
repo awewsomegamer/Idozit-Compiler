@@ -109,10 +109,10 @@ void tree_set_value(tree_code_t* tree, uint64_t mark, double value) {
 }
 
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
+        tree_code_t* var, *parent, *new_node;
+        
         switch (function) {
-        case T_FUNC_DERIVATIVE:
-                tree_code_t* var, *parent, *new_node;
-
+        case T_FUNC_DERIVATIVE: {
                 do {
                         var = find_node(tree, T_VAR, respect_to, 0);
                         
@@ -167,6 +167,47 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                 tree_set_value(tree, 2, 0);
 
                 break;
+        }
+
+        case T_FUNC_INTEGRAL: {
+                /* While we can find variables:
+                 *      -> Go to them and:
+                 *              -> If its in an exponent:
+                 *                      -> Add 1 to the power
+                 *                      -> Multiply the exponent by 1 / power + 1
+                 *              -> If it is in a multiplication:
+                 *                      -> 3x = 3/2 * x^2
+                 *                      -> 2x = x^2
+                 *                      -> x  = 1/2 * x^2
+                 * 
+                 *      -> For numbers with no variables attached:
+                 *              -> Put them into a tree where they are
+                 *                 multiplied by the variable.
+                 */
+
+
+
+                do {
+                        var = find_node(tree, T_VAR, respect_to, 0);
+                        
+                        if (var == NULL) break;
+
+                        parent = var->parent;
+                        new_node = create_empty(0, 0);
+
+                        if (parent->type == T_EXPONENT) {
+                                int value = evaluate_tree(parent->right);
+
+                        } else if (parent->type == T_MUL) {
+                                
+                        }
+                } while (var != NULL);
+                
+                tree_set_value(tree, 2, 0);
+
+                break;
+        }
+
         }
 }
 
