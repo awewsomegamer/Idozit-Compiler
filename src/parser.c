@@ -26,7 +26,10 @@ tree_code_t* create_node(int type, double value, uint64_t parser_mark, tree_code
 
 // Recursively free tree
 void free_tree(tree_code_t* tree) {
+        if (tree->left != NULL) free_tree(tree->left);
+        if (tree->right != NULL) free_tree(tree->right);
 
+        free(tree);
 }
 
 
@@ -82,9 +85,6 @@ tree_code_t *exponent(tree_code_t *ret)
 }
 
 tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parser_mark) {
-        printf("%s %f %d\n", TOKEN_NAMES[tree->type], tree->value, tree->parser_mark);
-        printf("%s %f %d\n\n", TOKEN_NAMES[type], value, parser_mark);
-
         if (tree != NULL && tree->type == type && tree->value == value && tree->parser_mark == parser_mark)
                 return tree;
 
@@ -95,15 +95,24 @@ tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parse
         
         if (tree->right != NULL) branch = find_node(tree->right, type, value, parser_mark);
         if (branch != NULL) return branch;
-        
 
         return NULL;
+}
+
+void tree_set_value(tree_code_t* tree, uint64_t mark, double value) {
+        if (tree->parser_mark != mark) {
+                tree->value = value;
+
+                if (tree->left != NULL) tree_set_value(tree->left, mark, value);
+                if (tree->right != NULL) tree_set_value(tree->right, mark, value);
+        }
 }
 
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
         switch (function) {
         case T_FUNC_DERIVATIVE:
                 tree_code_t* var, *parent, *new_node;
+
                 do {
                         var = find_node(tree, T_VAR, respect_to, 0);
                         
@@ -118,14 +127,17 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 if (value == 0) {
                                         parent->type = T_INT;
                                         parent->value = 0;
+
+                                        free_tree(parent->left);
+                                        free_tree(parent->right);
+
                                         parent->left = NULL;
                                         parent->right = NULL;
 
-                                        // Create a free_tree function to recursively
-                                        // free a tree
-
-                                        return;
+                                        continue;
                                 }
+
+                                parent->parser_mark = 2;
 
                                 parent->type = T_MUL;
                                 parent->left = new_node;
@@ -136,12 +148,24 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 new_node->left->parser_mark = 1;
                                 new_node->right = create_empty(T_INT, value - 1);
                         } else if (parent->type == T_MUL) {
+                                parent->type = T_INT;
+                                parent->parser_mark = 2;
 
-                        } else {
+                                if (var == parent->left)
+                                        parent->value = evaluate_tree(parent->right);
+                                else if (var == parent->right)
+                                        parent->value = evaluate_tree(parent->left);
 
+                                free_tree(parent->left);
+                                free_tree(parent->right);
+
+                                parent->left = NULL;
+                                parent->right = NULL;
                         }
                 } while (var != NULL);
                 
+                tree_set_value(tree, 2, 0);
+
                 break;
         }
 }
