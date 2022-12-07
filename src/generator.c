@@ -218,8 +218,8 @@ int evaluate(tree_code_t *tree)
 
                 int reg = allocate_reg();
 
-                if (reg >= 8) {
-                        append_byte(0x44);
+                if (left >= 8) {
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x10);
@@ -236,8 +236,8 @@ int evaluate(tree_code_t *tree)
 
                 append_byte(0xF2);
                 
-                if (reg >= 8) {
-                        append_byte(0x44);
+                if (left >= 8) {
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x0F);
@@ -257,7 +257,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0xF2);
 
                 if (left >= 8) {
-                        append_byte(0x44);
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x0F);
@@ -272,7 +272,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0xF2);
                 
                 if (left >= 8) {
-                        append_byte(0x44);
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x0F);
@@ -287,7 +287,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0xF2);
 
                 if (left >= 8) {
-                        append_byte(0x44);
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x0F);
@@ -302,7 +302,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0xF2);
 
                 if (left >= 8) {
-                        append_byte(0x44);
+                        append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                 }
 
                 append_byte(0x0F);
@@ -316,17 +316,36 @@ int evaluate(tree_code_t *tree)
         case T_EXPONENT:
                 uint8_t flags = 0;
                 int repetitions = numerical_evaluation(tree->right, &flags) - 1;
+                int reg = 0;
+
+                if (repetitions > 2) {
+                        reg = allocate_reg();
+
+                        append_byte(0xF2);
+
+                        if (left >= 8) {
+                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
+                        }
+
+                        append_byte(0x0F);
+                        append_byte(0x10);
+                        append_byte(0xC0 + left + ((reg % 8) * 8));  
+                }
+
                 for (int i = 0; i < repetitions; i++) {
                         append_byte(0xF2);
 
                         if (left >= 8) {
-                                append_byte(0x44);
+                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                         }
 
                         append_byte(0x0F);
                         append_byte(0x59);
-                        append_byte(0xC0 + ((left % 8) * 8));
+                        append_byte(0xC0 + ((repetitions > 2) ? (reg + ((left % 8) * 8)) : ((left % 8) * 8)));
                 }
+                
+                if (repetitions > 2)
+                        free_reg(reg);
 
                 return left;
         }
