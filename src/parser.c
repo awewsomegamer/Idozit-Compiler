@@ -164,6 +164,13 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                         }
                 } while (var != NULL);
                 
+                while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
+                        parent = parent->parent;
+
+                printf("%s %s %s\n", TOKEN_NAMES[parent->left->type], TOKEN_NAMES[parent->type], TOKEN_NAMES[parent->right->type]);
+
+                parent->parser_mark = 2;
+
                 tree_set_value(tree, 2, 0);
 
                 break;
@@ -184,9 +191,6 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                  *              -> Put them into a tree where they are
                  *                 multiplied by the variable.
                  */
-
-
-
                 do {
                         var = find_node(tree, T_VAR, respect_to, 0);
                         
@@ -196,11 +200,29 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                         new_node = create_empty(0, 0);
 
                         if (parent->type == T_EXPONENT) {
-                                int value = evaluate_tree(parent->right);
+                                int value = evaluate_tree(parent->right) + 1;
+                                
+                                new_node = create_empty(T_EXPONENT, 0);
+                                new_node->left = create_empty(T_VAR, respect_to);
+                                new_node->left->parser_mark = 1;
+                                new_node->right = create_empty(T_INT, value);
 
+                                parent->type = T_MUL;
+                                parent->left = new_node;
+                                parent->right = create_node(T_DIV, 0, 0, create_empty(T_NUMBER, 1), create_empty(T_NUMBER, value));
                         } else if (parent->type == T_MUL) {
                                 
                         }
+
+                        while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
+                                parent = parent->parent;
+
+                        printf("%s %s %s\n", TOKEN_NAMES[parent->left->type], TOKEN_NAMES[parent->type], TOKEN_NAMES[parent->right->type]);
+
+                        parent->parser_mark = 2;
+
+                        tree_set_value(tree, 2, 0);
+
                 } while (var != NULL);
                 
                 tree_set_value(tree, 2, 0);

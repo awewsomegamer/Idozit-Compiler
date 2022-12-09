@@ -282,7 +282,7 @@ int evaluate(tree_code_t *tree)
                 int repetitions = numerical_evaluation(tree->right, &flags) - 1;
                 int reg = 0;
 
-                if (repetitions > 2) {
+                if (repetitions >= 2) {
                         reg = allocate_reg();
 
                         append_byte(0xF2);
@@ -305,10 +305,10 @@ int evaluate(tree_code_t *tree)
 
                         append_byte(0x0F);
                         append_byte(0x59);
-                        append_byte(0xC0 + ((repetitions > 2) ? (reg + ((left % 8) * 8)) : ((left % 8) * 8)));
+                        append_byte(0xC0 + ((repetitions >= 2) ? (reg + ((left % 8) * 8)) : ((left % 8) * 8)));
                 }
                 
-                if (repetitions > 2)
+                if (repetitions >= 2)
                         free_reg(reg);
 
                 return left;
