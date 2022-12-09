@@ -208,6 +208,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x10);
                 append_byte(0x85 + ((reg % 8) * 8));
                 
+                printf("VAR: %f\n", tree->value);
                 uint32_t offset = ((uint32_t)tree->value * 8 + 0x18);
                 
                 for (int i = 0; i < 4; i++) {
