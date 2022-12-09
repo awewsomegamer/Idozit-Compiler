@@ -22,7 +22,7 @@ context_t expression(const char *form, int var_count, ...)
         va_start(args, var_count);
         variables_list = malloc(sizeof(char *) * var_count);
 
-        for (int i = 0; i < var_count; i++) {
+        for (int i = var_count - 1; i >= 0; i--) {
                 char *var = va_arg(args, char *);
                 variables_list[i] = malloc(strlen(var));
                 strcpy(&(*variables_list[i]), var);

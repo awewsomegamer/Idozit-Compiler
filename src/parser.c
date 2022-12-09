@@ -108,6 +108,29 @@ void tree_set_value(tree_code_t* tree, uint64_t mark, double value) {
         }
 }
 
+void parent_branch(tree_code_t* tree, uint64_t mark, tree_code_t* parent) {
+        if (tree != NULL && tree->parser_mark != mark) {
+                if (tree->left != NULL) parent_branch(tree->left, mark, parent);
+                if (tree->right != NULL) parent_branch(tree->right, mark, parent);
+
+                tree_code_t* filled_branch = malloc(sizeof(tree_code_t));
+                memcpy(filled_branch, tree, sizeof(tree_code_t));
+
+                tree_code_t* child = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
+                tree->type = parent->type;
+                tree->value = parent->value;
+                tree->parser_mark = parent->parser_mark;
+
+                if (parent->left == NULL) {
+                        tree->left = filled_branch;
+                        tree->right = parent->right;
+                } else if (parent->right == NULL) {
+                        tree->left = parent->left;
+                        tree->right = filled_branch;
+                }
+        }
+}
+
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
         tree_code_t* var, *parent, *new_node;
         
@@ -149,7 +172,7 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 new_node->right = create_empty(T_INT, value - 1);
                         } else if (parent->type == T_MUL) {
                                 parent->parser_mark = 2;
-
+                                
                                 if (var == parent->left) {
                                         parent->type = parent->right->type;
                                         parent->value = parent->right->value;
@@ -169,15 +192,15 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 var->value = 1;
                         }
 
+                        // Mark top most branch of the variable 2
                         while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
                                 parent = parent->parent;
 
-                        // printf("%s %s %s\n", TOKEN_NAMES[parent->left->type], TOKEN_NAMES[parent->type], TOKEN_NAMES[parent->right->type]);
-
                         parent->parser_mark = 2;
-
-                        tree_set_value(tree, 2, 0);
                 } while (var != NULL);
+
+                // Zero Code
+                tree_set_value(tree, 2, 0);
 
                 break;
         }
@@ -197,6 +220,7 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                  *              -> Put them into a tree where they are
                  *                 multiplied by the variable.
                  */
+
                 // Handle respected variable
                 do {
                         var = find_node(tree, T_VAR, respect_to, 0);
@@ -205,7 +229,8 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
 
                         parent = var->parent;
                         new_node = create_empty(0, 0);
-
+                        
+                        int nm_left = 0;
                         if (parent->type == T_EXPONENT) {
                                 int value = evaluate_tree(parent->right) + 1;
                                 
@@ -214,14 +239,59 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 new_node->left->parser_mark = 1;
                                 new_node->right = create_empty(T_INT, value);
 
-                                parent->type = T_MUL;
+                                parent->type = T_DIV;
                                 parent->left = new_node;
-                                parent->right = create_node(T_DIV, 0, 0, create_empty(T_NUMBER, 1), create_empty(T_NUMBER, value));
-                        } else if (parent->type == T_MUL) {
-                                
+                                parent->right = create_empty(T_INT, value);
+                                parent->parser_mark = 2;
+                        } else if (parent->type == T_MUL && ((nm_left = (parent->left->type == T_INT || parent->left->type == T_NUMBER)) || (parent->right->type == T_INT || parent->right->type == T_NUMBER))) {
+                                parent->parser_mark = 2;
+
+                                if (nm_left == 0) {
+                                        parent->right->value = evaluate_tree(parent->right) / 2;
+
+
+                                        if (parent->right->value == 1) {
+                                                free_tree(parent->right);
+                                                parent->right = NULL;
+                                                parent->value = var->value;
+                                                var = parent;
+                                                goto MUL_GEN;
+                                        }
+
+                                        parent->right->type = T_NUMBER;
+                                        printf("%f\n", parent->right->value);
+                                } else {
+                                        parent->left->value = evaluate_tree(parent->left) / 2;
+
+                                        if (parent->left->value == 1) {
+                                                free_tree(parent->left);
+                                                parent->left = NULL;
+                                                parent->value = var->value;
+                                                var = parent;
+                                                goto MUL_GEN;
+                                        }
+
+                                        parent->left->type = T_NUMBER;
+                                        printf("%f\n", parent->left->value);
+                                }
+
+                                goto MUL_GEN;
+                        } else {
+                                MUL_GEN:
+
+                                var->type = T_MUL;
+                                var->left = create_empty(T_VAR, var->value);
+                                var->right = var->left;
+                                var->left->parser_mark = 1;
+                                var->parser_mark = 2;
                         }
                 } while (var != NULL);
 
+                // Now we need to set all numbers, integers, variables to be multiplied by X
+                tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
+
+                parent_branch(tree->left, 2, parent);
+                parent_branch(tree->right, 2, parent);
 
                 break;
         }
