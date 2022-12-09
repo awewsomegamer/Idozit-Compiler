@@ -109,10 +109,10 @@ void tree_set_value(tree_code_t* tree, uint64_t mark, double value) {
 }
 
 void parent_branch(tree_code_t* tree, uint64_t mark, tree_code_t* parent) {
-        if (tree != NULL && tree->parser_mark != mark) {
-                if (tree->left != NULL) parent_branch(tree->left, mark, parent);
-                if (tree->right != NULL) parent_branch(tree->right, mark, parent);
+        if (tree->left != NULL && tree->parser_mark != mark) parent_branch(tree->left, mark, parent);
+        if (tree->right != NULL && tree->parser_mark != mark) parent_branch(tree->right, mark, parent);
 
+        if (tree != NULL && tree->parser_mark != mark) {
                 tree_code_t* filled_branch = malloc(sizeof(tree_code_t));
                 memcpy(filled_branch, tree, sizeof(tree_code_t));
 
@@ -285,13 +285,25 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 var->left->parser_mark = 1;
                                 var->parser_mark = 2;
                         }
+
+                        while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
+                                parent = parent->parent;
+
+                        parent->parser_mark = 2;
                 } while (var != NULL);
 
                 // Now we need to set all numbers, integers, variables to be multiplied by X
                 tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
+                
+                /* Issue:
+                 * The functions below are converting a larger branch to be
+                 * multiplied by X. This is improper. I need to devise a way to only
+                 * target the branches which are not marked 2.
+                 */
 
-                parent_branch(tree->left, 2, parent);
-                parent_branch(tree->right, 2, parent);
+
+                // parent_branch(tree->left, 2, parent);
+                // parent_branch(tree->right, 2, parent);
 
                 break;
         }
