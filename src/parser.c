@@ -194,7 +194,7 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                         }
                 } while (var != NULL);
 
-                tree_code_t* parent = create_node(T_MUL, 0, 0, NULL, create_empty(T_VAR, respect_to));
+                tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
                 parent_branch(tree->left, 3, parent);
                 parent_branch(tree->right, 3, parent);
 
