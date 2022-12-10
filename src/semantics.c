@@ -9,6 +9,7 @@ void validate(tree_code_t *head)
 {
         switch (head->type) {
         case T_VAR:
+        case T_INT:
         case T_NUMBER:
                 if (!(head->left == NULL && head->right == NULL))
                         message(MESSAGE_ERROR, "Illegal children of %s\n", TOKEN_NAMES[head->type]);

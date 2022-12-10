@@ -99,7 +99,8 @@ tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parse
         return NULL;
 }
 
-void tree_set_value(tree_code_t* tree, uint64_t mark, double value) {
+void tree_set_value(tree_code_t *tree, uint64_t mark, double value)
+{
         if (tree->parser_mark != mark) {
                 tree->value = value;
 
