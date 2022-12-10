@@ -164,6 +164,7 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
                                 parent->right = create_empty(T_INT, value);
                                 parent->left->left->parser_mark = 1;
+                                parent->parser_mark = 3;
                         } else if (parent != NULL && parent->type == T_MUL) {
                                 // 2 * x -> x^2, 3 * x^2 -> x^3, x*x -> x^2/2
                                 if (opposite->type == T_INT || opposite->type == T_NUMBER) {
@@ -185,6 +186,7 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                         } else {
                                 REG_GEN:
 
+                                var->parser_mark = 3;       
                                 var->type = T_EXPONENT;
                                 var->left = create_empty(T_VAR, var->value);
                                 var->left->parser_mark = 1;
@@ -192,8 +194,9 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                         }
                 } while (var != NULL);
 
-                        
-
+                tree_code_t* parent = create_node(T_MUL, 0, 0, NULL, create_empty(T_VAR, respect_to));
+                parent_branch(tree->left, 3, parent);
+                parent_branch(tree->right, 3, parent);
 
                 break;
         }
