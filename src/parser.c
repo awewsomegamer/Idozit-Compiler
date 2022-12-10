@@ -133,178 +133,67 @@ void parent_branch(tree_code_t* tree, uint64_t mark, tree_code_t* parent) {
 }
 
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
-        tree_code_t* var, *parent, *new_node;
+        tree_code_t* var, *opposite, *parent, *new_node;
         
         switch (function) {
         case T_FUNC_DERIVATIVE: {
-                do {
-                        var = find_node(tree, T_VAR, respect_to, 0);
-                        
-                        if (var == NULL) break;
 
-                        parent = var->parent;
-                        new_node = create_empty(0, 0);
-
-                        if (parent->type == T_EXPONENT) {
-                                int value = evaluate_tree(parent->right);
-
-                                if (value == 0) {
-                                        parent->type = T_INT;
-                                        parent->value = 0;
-
-                                        free_tree(parent->left);
-                                        free_tree(parent->right);
-
-                                        parent->left = NULL;
-                                        parent->right = NULL;
-
-                                        continue;
-                                }
-
-                                parent->parser_mark = 2;
-
-                                parent->type = T_MUL;
-                                parent->left = new_node;
-                                parent->right = create_empty(T_INT, value);
-
-                                new_node->type = T_EXPONENT;
-                                new_node->left = create_empty(T_VAR, var->value);
-                                new_node->left->parser_mark = 1;
-                                new_node->right = create_empty(T_INT, value - 1);
-                        } else if (parent->type == T_MUL) {
-                                parent->parser_mark = 2;
-                                
-                                if (var == parent->left) {
-                                        parent->type = parent->right->type;
-                                        parent->value = parent->right->value;
-                                } else if (var == parent->right) {
-                                        parent->type = parent->left->type;
-                                        parent->value = parent->left->value;
-                                }
-
-                                free_tree(parent->left);
-                                free_tree(parent->right);
-
-                                parent->left = NULL;
-                                parent->right = NULL;
-                        } else {
-                                var->parser_mark = 2;
-                                var->type = T_INT;
-                                var->value = 1;
-                        }
-
-                        // Mark top most branch of the variable 2
-                        while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
-                                parent = parent->parent;
-
-                        parent->parser_mark = 2;
-                } while (var != NULL);
-
-                // Zero Code
-                tree_set_value(tree, 2, 0);
 
                 break;
         }
 
         case T_FUNC_INTEGRAL: {
-                /* While we can find variables:
-                 *      -> Go to them and:
-                 *              -> If its in an exponent:
-                 *                      -> Add 1 to the power
-                 *                      -> Multiply the exponent by 1 / power + 1
-                 *              -> If it is in a multiplication:
-                 *                      -> 3x = 3/2 * x^2
-                 *                      -> 2x = x^2
-                 *                      -> x  = 1/2 * x^2
-                 * 
-                 *      -> For numbers with no variables attached:
-                 *              -> Put them into a tree where they are
-                 *                 multiplied by the variable.
-                 */
-
-                // Handle respected variable
-                do {
+                do {   
+                        // Find the variables
                         var = find_node(tree, T_VAR, respect_to, 0);
-                        
+
                         if (var == NULL) break;
 
                         parent = var->parent;
-                        new_node = create_empty(0, 0);
-                        
-                        int nm_left = 0;
-                        if (parent->type == T_EXPONENT) {
-                                int value = evaluate_tree(parent->right) + 1;
-                                
-                                new_node = create_empty(T_EXPONENT, 0);
-                                new_node->left = create_empty(T_VAR, respect_to);
-                                new_node->left->parser_mark = 1;
-                                new_node->right = create_empty(T_INT, value);
 
-                                parent->type = T_DIV;
-                                parent->left = new_node;
-                                parent->right = create_empty(T_INT, value);
-                                parent->parser_mark = 2;
-                        } else if (parent->type == T_MUL && ((nm_left = (parent->left->type == T_INT || parent->left->type == T_NUMBER)) || (parent->right->type == T_INT || parent->right->type == T_NUMBER))) {
-                                parent->parser_mark = 2;
-
-                                if (nm_left == 0) {
-                                        parent->right->value = evaluate_tree(parent->right) / 2;
-
-
-                                        if (parent->right->value == 1) {
-                                                free_tree(parent->right);
-                                                parent->right = NULL;
-                                                parent->value = var->value;
-                                                var = parent;
-                                                goto MUL_GEN;
-                                        }
-
-                                        parent->right->type = T_NUMBER;
-                                        printf("%f\n", parent->right->value);
-                                } else {
-                                        parent->left->value = evaluate_tree(parent->left) / 2;
-
-                                        if (parent->left->value == 1) {
-                                                free_tree(parent->left);
-                                                parent->left = NULL;
-                                                parent->value = var->value;
-                                                var = parent;
-                                                goto MUL_GEN;
-                                        }
-
-                                        parent->left->type = T_NUMBER;
-                                        printf("%f\n", parent->left->value);
-                                }
-
-                                goto MUL_GEN;
-                        } else {
-                                MUL_GEN:
-
-                                var->type = T_MUL;
-                                var->left = create_empty(T_VAR, var->value);
-                                var->right = var->left;
-                                var->left->parser_mark = 1;
-                                var->parser_mark = 2;
+                        if (parent != NULL) {
+                                if (var == parent->left) opposite = parent->right;
+                                if (var == parent->right) opposite = parent->left;
                         }
 
-                        while (parent->parent != NULL && (parent->parent->type == T_MUL || parent->parent->type == T_DIV))
-                                parent = parent->parent;
+                        if (parent != NULL && parent->type == T_EXPONENT) {
+                                // x^2 -> x^3/3
+                                int value = evaluate_tree(tree->right) + 1;
 
-                        parent->parser_mark = 2;
+                                parent->type = T_DIV;
+                                parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
+                                parent->right = create_empty(T_INT, value);
+                                parent->left->left->parser_mark = 1;
+                        } else if (parent != NULL && parent->type == T_MUL) {
+                                // 2 * x -> x^2, 3 * x^2 -> x^3, x*x -> x^2/2
+                                if (opposite->type == T_INT || opposite->type == T_NUMBER) {
+                                        opposite->value = evaluate_tree(opposite) / 2;
+                                        opposite->type = T_NUMBER;
+                                }
+                                
+                                if (opposite == parent->left) {
+                                        parent->left = var;
+                                        parent->right = opposite;
+                                }
+
+                                if (opposite->value == 1) {
+                                        parent->value = var->value;
+                                        var = parent;
+                                }
+
+                                goto REG_GEN;
+                        } else {
+                                REG_GEN:
+
+                                var->type = T_EXPONENT;
+                                var->left = create_empty(T_VAR, var->value);
+                                var->left->parser_mark = 1;
+                                var->right = create_empty(T_INT, 2);
+                        }
                 } while (var != NULL);
 
-                // Now we need to set all numbers, integers, variables to be multiplied by X
-                tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
-                
-                /* Issue:
-                 * The functions below are converting a larger branch to be
-                 * multiplied by X. This is improper. I need to devise a way to only
-                 * target the branches which are not marked 2.
-                 */
+                        
 
-
-                // parent_branch(tree->left, 2, parent);
-                // parent_branch(tree->right, 2, parent);
 
                 break;
         }
@@ -367,7 +256,7 @@ tree_code_t *term()
                 expect(T_RPAREN);
                 
                 apply_function(func, degree, respect_to, ret); 
-
+                
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;

@@ -379,10 +379,6 @@ code_block_t default_x86_64_generator(tree_code_t *tree)
         // Fill in the missing references
         fill_references();
 
-        uint8_t f = 0;
-        double a = numerical_evaluation(tree, &f);
-        printf("%f %X\n", a, f);
-
         ret->func = buffer;
         ret->data = data_buffer;
         ret->code_size = position;
