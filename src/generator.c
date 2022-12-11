@@ -306,7 +306,7 @@ int evaluate(tree_code_t *tree)
 
                         append_byte(0x0F);
                         append_byte(0x59);
-                        append_byte(0xC0 + ((repetitions >= 2) ? (reg + ((left % 8) * 8)) : ((left % 8) * 8)));
+                        append_byte(0xC0 + ((repetitions >= 2) ? (reg + ((left % 8) * 8)) : (left + ((left % 8) * 8))));
                 }
                 
                 if (repetitions >= 2)

@@ -109,27 +109,43 @@ void tree_set_value(tree_code_t *tree, uint64_t mark, double value)
         }
 }
 
-void parent_branch(tree_code_t* tree, uint64_t mark, tree_code_t* parent) {
-        if (tree->left != NULL && tree->parser_mark != mark) parent_branch(tree->left, mark, parent);
-        if (tree->right != NULL && tree->parser_mark != mark) parent_branch(tree->right, mark, parent);
+uint64_t tree_homogenous(tree_code_t* tree, uint64_t mark)  {
+        uint64_t left = 1, right = 1;
+
+        if (tree->left != NULL) left = tree_homogenous(tree->left, mark);
+        if (tree->right != NULL) right = tree_homogenous(tree->right, mark);
+
+        if (tree != NULL && tree->parser_mark != mark)
+                return 0;
+
+        return left * right;
+}
+
+void parent_branch(tree_code_t* tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t* parent) {
+        int homogenous = 0;
 
         if (tree != NULL && tree->parser_mark != mark) {
-                tree_code_t* filled_branch = malloc(sizeof(tree_code_t));
-                memcpy(filled_branch, tree, sizeof(tree_code_t));
-
-                tree_code_t* child = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
+                homogenous = tree_homogenous(tree, homogenous_mark);
+                
+                tree_code_t* tmp = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
+                
                 tree->type = parent->type;
                 tree->value = parent->value;
                 tree->parser_mark = parent->parser_mark;
 
                 if (parent->left == NULL) {
-                        tree->left = filled_branch;
-                        tree->right = parent->right;
+                        tree->left = tmp;
+                        tree->right = create_node(parent->right->type, parent->right->value, parent->right->parser_mark,
+                                                  parent->right->left, parent->right->right);
                 } else if (parent->right == NULL) {
-                        tree->left = parent->left;
-                        tree->right = filled_branch;
+                        tree->right = tmp;
+                        tree->left = create_node(parent->left->type, parent->left->value, parent->left->parser_mark,
+                                                  parent->left->left, parent->left->right);
                 }
         }
+
+        if (!homogenous && tree->left != NULL) parent_branch(tree->left, mark, homogenous_mark, parent);
+        if (!homogenous && tree->right != NULL) parent_branch(tree->right, mark, homogenous_mark, parent);
 }
 
 void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
@@ -158,15 +174,21 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
 
                         if (parent != NULL && parent->type == T_EXPONENT) {
                                 // x^2 -> x^3/3
-                                int value = evaluate_tree(tree->right) + 1;
+                                int value = evaluate_tree(parent->right) + 1;
 
                                 parent->type = T_DIV;
                                 parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
                                 parent->right = create_empty(T_INT, value);
                                 parent->left->left->parser_mark = 1;
-                                parent->parser_mark = 3;
+
+                                parent->left->parser_mark = 3;
+                                parent->left->left->parser_mark = 3;
+                                parent->left->right->parser_mark = 3;
+                                parent->right->parser_mark = 3;
+                                parent->parser_mark = 3; 
                         } else if (parent != NULL && parent->type == T_MUL) {
                                 // 2 * x -> x^2, 3 * x^2 -> x^3, x*x -> x^2/2
+
                                 if (opposite->type == T_INT || opposite->type == T_NUMBER) {
                                         opposite->value = evaluate_tree(opposite) / 2;
                                         opposite->type = T_NUMBER;
@@ -185,18 +207,23 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
                                 goto REG_GEN;
                         } else {
                                 REG_GEN:
-
-                                var->parser_mark = 3;       
                                 var->type = T_EXPONENT;
                                 var->left = create_empty(T_VAR, var->value);
-                                var->left->parser_mark = 1;
                                 var->right = create_empty(T_INT, 2);
+                                
+                                var->parser_mark = 3;       
+                                var->left->parser_mark = 3;
+                                var->right->parser_mark = 3;
+                        }
+
+                        while (parent != NULL) {
+                                parent->parser_mark = 3;
+                                parent = parent->parent;
                         }
                 } while (var != NULL);
 
                 tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
-                parent_branch(tree->left, 3, parent);
-                parent_branch(tree->right, 3, parent);
+                parent_branch(tree, 3, 0, parent);
 
                 break;
         }
