@@ -153,7 +153,78 @@ void apply_function(int function, int degree, int respect_to, tree_code_t* tree)
         
         switch (function) {
         case T_FUNC_DERIVATIVE: {
+                do {
+                        var = find_node(tree, T_VAR, respect_to, 0);
 
+                        if (var == NULL) break;
+
+                        parent = var->parent;
+
+                        if (parent != NULL) {
+                                if (var == parent->left) opposite = parent->right;
+                                if (var == parent->right) opposite = parent->left; 
+                        }
+
+                        if (parent != NULL && parent->type == T_EXPONENT) {
+                                int value = evaluate_tree(parent->right) - 1;
+
+                                if (value > 1) {
+                                        // var ^ (value) * (value + 1)
+                                        free_tree(parent->left);
+                                        free_tree(parent->right);
+
+                                        parent->type = T_MUL;
+
+                                        parent->left = create_node(T_EXPONENT, 0, 0, create_empty(T_VAR, respect_to), create_empty(T_INT, value));
+                                        parent->left->left->parser_mark = 1;
+
+                                        parent->right = create_empty(T_INT, (value + 1));
+
+                                        parent->parser_mark = 2;
+                                } else if (value == 1) {
+                                        // (value + 1) * var
+                                        free_tree(parent->left);
+                                        free_tree(parent->right);
+
+                                        parent->type = T_MUL;
+                                        parent->left = create_empty(T_VAR, respect_to);
+                                        parent->left->parser_mark = 1;
+
+                                        parent->right = create_empty(T_INT, (value + 1));
+                                        parent->parser_mark = 2;
+                                } else {
+                                        // (value + 1)
+                                        free_tree(parent->left);
+                                        free_tree(parent->right);
+                                        parent->right = NULL;
+                                        parent->left = NULL;
+
+                                        parent->type = T_INT;
+                                        parent->value = value + 1;
+                                        parent->parser_mark = 2;
+                                }
+                        } else if (parent != NULL && parent->type == T_MUL) {
+                                parent->type = opposite->type;
+                                parent->value = opposite->value;
+                                parent->parser_mark = 2;
+
+                                free_tree(parent->left);
+                                free_tree(parent->right);
+                                parent->left = NULL;
+                                parent->right = NULL;
+                        } else {
+                                var->type = T_INT;
+                                var->value = 1;
+                                var->parser_mark = 2;
+                        }
+
+                        while (parent != NULL && (parent->type == T_MUL || parent->type == T_DIV)) {
+                                parent->parser_mark = 2;
+                                parent = parent->parent;
+                        }
+                } while (var != NULL);
+
+                tree_set_value(tree, 2, 0);
 
                 break;
         }
