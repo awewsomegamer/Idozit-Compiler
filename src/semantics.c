@@ -2,8 +2,15 @@
 #include <lexer.h>
 #include <messages.h>
 
+void (*validate_function)(tree_code_t *) = NULL;
+
 void validate(tree_code_t *head)
 {
+        if (validate_function != NULL) {
+                (*validate_function)(head);
+                return;
+        }
+
         switch (head->type) {
         case T_VAR:
         case T_INT:
@@ -26,4 +33,9 @@ void validate(tree_code_t *head)
 
         if (head->left != NULL) validate(head->left);
         if (head->right != NULL) validate(head->right);
+}
+
+void _set_validate_function(void (*func)(tree_code_t *))
+{
+        validate_function = func;
 }

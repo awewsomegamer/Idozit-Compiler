@@ -225,26 +225,34 @@ const char *tree_to(tree_code_t *tree, const char *language);
  */
 void objectify(FILE *file, code_block_t code, ...);
 
-/* void set_message_handler(void*) :
- * This function will set the message handler
- * to the given void* (function).
+/* void set_lexer(int (*)(token_t *)) :
+ * Sets the lexer to the given lexer.
+ * Setting it to NULL resets it to the default lexer
  */
-void set_message_handler(void (*func)(int, const char *, va_list));
+void set_lexer(int (*)(token_t *));
 
-/* void default_message_handler() :
- * This function will revert the message handler
- * to the default message handler. 
+/* void set_parser(tree_code_t * (*)()) :
+ * Sets the parser to the given parser
+ * Setting it to NULL resets it to the default parser
  */
-void default_message_handler();
+void set_parser(tree_code_t * (*)());
+
+/* void set_semantic_analyzer(void (*)(tree_code_t *)) :
+ * Sets the semantic analyzer to the given semantic analyzer
+ * Setting it to NULL resets it to the default semantic analyzer
+ */
+void set_semantic_analyzer(void (*)(tree_code_t *));
 
 /* void set_code_generator(code_bloc_t (*generator)(tree_code_t*)) :
  * Sets the code generator to the given code generator
+ * Setting it to NULL resets it to the default code generator
  */
-void set_code_generator(code_block_t (*generator)(tree_code_t *));
+void set_code_generator(code_block_t (*)(tree_code_t *));
 
-/* void default_code_generator() :
- * Sets the code generator to the default generator.c (which is for x86-64)
+/* void set_message_handler(void*) :
+ * This function will set the message handler to the given function.
+ * Setting it to NULL resets it to the default message handler
  */
-void default_code_generator();
+void set_message_handler(void (*)(int, const char *, va_list));
 
 #endif

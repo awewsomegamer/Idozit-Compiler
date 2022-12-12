@@ -68,6 +68,8 @@ static const symbol_t STANDARD_SYMBOLS[] = {
         {"E", EULERS_NUMBER},
 };
 
+extern int (*lex_function)(token_t *);
+
 /* int lex(token_t*) :
  * This function will write to the token
  * given, and return either a 1 or a 0
@@ -76,5 +78,7 @@ static const symbol_t STANDARD_SYMBOLS[] = {
  * 0: No new token found
  */
 int lex(token_t *token);
+
+void _set_lexer_function(int (*)(token_t *));
 
 #endif

@@ -10,6 +10,8 @@ char **variables_list = NULL;
 uint32_t variable_count = 0;
 uint32_t expression_ptr = 0;
 
+int (*lex_function)(token_t *) = NULL;
+
 /* char next_char() :
  * Returns the next character in the
  * expreesion_string character stream
@@ -63,6 +65,9 @@ char* get_string(char c)
 
 int lex(token_t *token)
 {
+	if (lex_function != NULL)
+		return (*lex_function)(token);
+	
 	token->type = 0;
 	token->value = 0;
 
@@ -165,4 +170,9 @@ int lex(token_t *token)
 	}
 
 	return 0;
+}
+
+void _set_lexer_function(int (*func)(token_t *))
+{
+	lex_function = func;
 }

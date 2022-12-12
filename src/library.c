@@ -92,22 +92,27 @@ double run(code_block_t code, ...)
         return result;
 }
 
+void set_lexer(int (*func)(token_t *))
+{
+        _set_lexer_function(func);
+}
+
+void set_parser(tree_code_t * (*func)())
+{
+        _set_parser_function(func);
+}
+
+void set_semantic_analyzer(void (*func)(tree_code_t *))
+{
+        _set_validate_function(func);
+}
+
+void set_code_generator(code_block_t (*func)(tree_code_t *))
+{
+        code_generator = func;
+}
+
 void set_message_handler(void (*func)(int, const char *, va_list))
 {
        _set_message_handler(func); 
-}
-
-void default_message_handler()
-{
-        _set_message_handler(NULL);
-}
-
-void set_code_generator(code_block_t (*generator)(tree_code_t *))
-{
-        code_generator = generator;
-}
-
-void default_code_generator()
-{
-        code_generator = NULL;
 }

@@ -8,6 +8,8 @@
 token_t *current_token = NULL;
 token_t *last_token = NULL;
 
+tree_code_t * (*parse_function)() = NULL;
+
 // Functions to manipulate nodes
 tree_code_t *create_node(int type, double value, uint64_t parser_mark, tree_code_t *left, tree_code_t *right)
 {
@@ -457,6 +459,9 @@ tree_code_t *addition()
 
 tree_code_t *build_tree()
 {
+        if (parse_function != NULL)
+                return (*parse_function)();
+
         current_token = malloc(sizeof(token_t));
         last_token = malloc(sizeof(token_t));
         lex(current_token);
@@ -492,4 +497,9 @@ double evaluate_tree(tree_code_t *head)
         case T_INT:
         case T_NUMBER: return head->value;
         }
+}
+
+void _set_parser_function(tree_code_t * (*func)()) 
+{
+        parse_function = func;
 }

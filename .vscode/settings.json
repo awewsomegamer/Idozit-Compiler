@@ -6,6 +6,7 @@
                 "unistd.h": "c",
                 "mman.h": "c",
                 "string.h": "c",
-                "design1.h": "c"
+                "design1.h": "c",
+                "semantics.h": "c"
         }
 }
