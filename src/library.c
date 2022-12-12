@@ -51,7 +51,6 @@ code_block_t compile(context_t context)
         else
                 ret = (*code_generator)(context.head);
 
-        
         ret.var_count = context.var_count;
 
         return ret;
@@ -68,7 +67,7 @@ double run(code_block_t code, ...)
         char* machine_code_string = malloc((code.code_size + code.data_size) * 3);
         for (int i = 0; i < code.code_size + code.data_size; i++)
                 sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)buf) + i));
-        message(MESSAGE_DEBUG, "%s\n", machine_code_string);
+        message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
 
         va_list args;
         va_start(args, code);

@@ -61,13 +61,6 @@ char* get_string(char c)
 	return string;
 }
 
-/* int lex(token_t*) :
- * This function will write to the token
- * given, and return either a 1 or a 0
- * 
- * 1: New token found
- * 0: No new token found
- */
 int lex(token_t *token)
 {
 	token->type = 0;

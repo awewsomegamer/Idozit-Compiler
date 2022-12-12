@@ -105,6 +105,10 @@ double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
         }
 }
 
+/* int evaluate(tree_code_t *tree) :
+ * Takes the given tree and generates it into x86-64
+ * machine code into the buffer
+ */
 int evaluate(tree_code_t *tree)
 {       
         uint8_t flags = 0;
@@ -208,7 +212,6 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x10);
                 append_byte(0x85 + ((reg % 8) * 8));
                 
-                printf("VAR: %f\n", tree->value);
                 uint32_t offset = ((uint32_t)tree->value * 8 + 0x18);
                 
                 for (int i = 0; i < 4; i++) {
@@ -318,6 +321,9 @@ int evaluate(tree_code_t *tree)
         return 0;
 }
 
+/* void fill_references() :
+ * This will fill in the references left 0 within the program
+ */
 void fill_references()
 {
         struct reference* present_references = malloc(sizeof(struct reference));

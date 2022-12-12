@@ -9,7 +9,7 @@ token_t *current_token = NULL;
 token_t *last_token = NULL;
 
 // Functions to manipulate nodes
-tree_code_t* create_node(int type, double value, uint64_t parser_mark, tree_code_t *left, tree_code_t *right)
+tree_code_t *create_node(int type, double value, uint64_t parser_mark, tree_code_t *left, tree_code_t *right)
 {
         tree_code_t *node = malloc(sizeof(tree_code_t));
 
@@ -84,7 +84,15 @@ tree_code_t *exponent(tree_code_t *ret)
         return exponent_ret;
 }
 
-tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parser_mark) {
+/* tree_code_t *find_node(tree_code_t *tree, int type, double value, uint64_t parser_mark) :
+ * This function will look throuhg the given tree for any node with the given specifications.
+ * Specifications:
+ *      -> Type of node
+ *      -> Value of the node
+ *      -> Parser mark of the node
+ */
+tree_code_t *find_node(tree_code_t *tree, int type, double value, uint64_t parser_mark)
+{
         if (tree != NULL && tree->type == type && tree->value == value && tree->parser_mark == parser_mark)
                 return tree;
 
@@ -99,6 +107,10 @@ tree_code_t* find_node(tree_code_t* tree, int type, double value, uint64_t parse
         return NULL;
 }
 
+/* void tree_set_value(tree_code_t *tree, uint64_t mark, double value) :
+ * Recursively sets the value of the given tree to the given value if the
+ * tree node's parser mark does not meet the given parser mark
+ */
 void tree_set_value(tree_code_t *tree, uint64_t mark, double value)
 {
         if (tree->parser_mark != mark) {
@@ -109,8 +121,25 @@ void tree_set_value(tree_code_t *tree, uint64_t mark, double value)
         }
 }
 
-uint64_t tree_homogenous(tree_code_t* tree, uint64_t mark)  {
-        uint64_t left = 1, right = 1;
+/* void reset_parser_marks(tree_code_t *tree) :
+ * Recursively sets the parser mark of the given
+ * tree to 0.
+ */
+void reset_parser_marks(tree_code_t *tree)
+{
+        if (tree->left != NULL) reset_parser_marks(tree->left);
+        if (tree->right != NULL) reset_parser_marks(tree->right);
+        tree->parser_mark = 0;
+}
+
+/* uint8_t tree_homogenous(tree_code_t *tree, uint64_t mark) :
+ * This function checks to see if the parser mark of the nodes
+ * descending down the entirety of the given tree are the same,
+ * returning a 1 if this is the case and a 0 if not.
+ */
+uint8_t tree_homogenous(tree_code_t *tree, uint64_t mark)
+{
+        uint8_t left = 1, right = 1;
 
         if (tree->left != NULL) left = tree_homogenous(tree->left, mark);
         if (tree->right != NULL) right = tree_homogenous(tree->right, mark);
@@ -121,13 +150,18 @@ uint64_t tree_homogenous(tree_code_t* tree, uint64_t mark)  {
         return left * right;
 }
 
-void parent_branch(tree_code_t* tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t* parent) {
+/* void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t *parent) :
+ * This function will recursively parent the given tree to the given parent if it does not meet the
+ * parser mark, but does meet the homogenous mark.
+ */
+void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t *parent)
+{
         int homogenous = 0;
 
         if (tree != NULL && tree->parser_mark != mark) {
                 homogenous = tree_homogenous(tree, homogenous_mark);
                 
-                tree_code_t* tmp = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
+                tree_code_t *tmp = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
                 
                 tree->type = parent->type;
                 tree->value = parent->value;
@@ -148,8 +182,13 @@ void parent_branch(tree_code_t* tree, uint64_t mark, uint64_t homogenous_mark, t
         if (!homogenous && tree->right != NULL) parent_branch(tree->right, mark, homogenous_mark, parent);
 }
 
-void apply_function(int function, int degree, int respect_to, tree_code_t* tree) {
-        tree_code_t* var, *opposite, *parent, *new_node;
+/* void apply_function(int function, int degree, int respect_to, tree_code_t *tree) :
+ * Applies the given mathematical function to the given tree with respect to the given
+ * given variable.
+ */
+void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
+{
+        tree_code_t *var, *opposite, *parent, *new_node;
         
         switch (function) {
         case T_FUNC_DERIVATIVE: {
@@ -358,6 +397,8 @@ tree_code_t *term()
                 
                 apply_function(func, degree, respect_to, ret); 
                 
+                reset_parser_marks(ret);
+
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
@@ -414,10 +455,6 @@ tree_code_t *addition()
         return tree;
 }
 
-/* tree_code_t *build_tree() :
- * This function will build the AST
- * which can be used later.
- */
 tree_code_t *build_tree()
 {
         current_token = malloc(sizeof(token_t));

@@ -3,7 +3,11 @@
 
 #include <design1.h>
 
-tree_code_t* build_tree();
-double evaluate_tree(tree_code_t* head);
+/* tree_code_t *build_tree() :
+ * Builds the parse tree after the
+ * lexer has been setup to the right
+ * input
+ */
+tree_code_t *build_tree();
 
 #endif

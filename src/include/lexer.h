@@ -68,7 +68,13 @@ static const symbol_t STANDARD_SYMBOLS[] = {
         {"E", EULERS_NUMBER},
 };
 
-
-int lex();
+/* int lex(token_t*) :
+ * This function will write to the token
+ * given, and return either a 1 or a 0
+ * 
+ * 1: New token found
+ * 0: No new token found
+ */
+int lex(token_t *token);
 
 #endif

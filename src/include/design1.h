@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-/*
+/* Grammar
 NUMBER = 0123456789
 IDENTIFIER = string of characters that do not include numbers
 
@@ -26,7 +26,7 @@ term: ( expression )
 variable: IDENTIFIER != reserved
 
 function: IDENTIFIER == reserved
-        & IDENTIFIER NUMBER ( addition )
+        & IDENTIFIER NUMBER variable ( addition )
 
 */
 
@@ -141,7 +141,7 @@ function: IDENTIFIER == reserved
  *
  * value        : An double value
  * type         : The type of the current node (+, -, /, *, etc...)
- * used         : How many branches are used
+ * parser_mark  : A variable that is used by the parser to denote specific information about this node
  * left & right : Branches to the left and right
  */
 struct tree_code
@@ -187,23 +187,6 @@ struct code_block
     int var_count;
 };
 typedef struct code_block code_block_t;
-
-/* struct compiler_params :
- * optimization_level : The level of optimization the compiler should do (0: none, 3: optimize everything)
- * break_on_err       : Should the compiler break when it encounters an error (0: no, 1: yes)
- * debug              : A pointer to the function the compiler should call for debug messages 
- *                      (void debug(const char *form, ...);) (NULL == no print)
- * error              : A pointer to the function the compiler should call for error messages 
- *                      (void error(const char *form, ...);) (NULL == no print)
- */
-struct compiler_params
-{
-    uint8_t optimization_level;
-    uint8_t flags;
-    void *debug;
-    void *error;
-};
-typedef struct compiler_params compiler_params_t;
 
 /* context_t expression(const char *form, int var_count, ...) :
  * Sets up the expression and the variables for lexer and parser
