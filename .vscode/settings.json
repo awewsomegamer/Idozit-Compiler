@@ -7,6 +7,7 @@
                 "mman.h": "c",
                 "string.h": "c",
                 "design1.h": "c",
-                "semantics.h": "c"
+                "semantics.h": "c",
+                "lexer.h": "c"
         }
 }

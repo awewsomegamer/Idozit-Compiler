@@ -136,6 +136,18 @@ function: IDENTIFIER == reserved
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
 #define DEBUG 1
 
+/* struct token :
+ * The token structure used by the compiler.
+ * 
+ * type   : An integer which contains the numerical type of the token
+ * value  : A double which contains the numerical value of the token
+ */
+struct token {
+        int type;
+        double value;
+};
+typedef struct token token_t;
+
 /* struct tree_code :
  * An intermediate structure.
  *

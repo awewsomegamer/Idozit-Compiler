@@ -39,12 +39,6 @@ static const char *TOKEN_NAMES[] = {
         [T_IDENT] =    "Identifier"
 };
 
-struct token {
-        int type;
-        double value;
-};
-typedef struct token token_t;
-
 enum {
         T_FUNC_INTEGRAL,
         T_FUNC_DERIVATIVE,
