@@ -1,10 +1,20 @@
 # Defaults
 
-## Lexer, Parser, and Semantic Analyzer
+## Lexer, Parser, Semantic Analyzer, and Code Generator
+The lexer, parser, semantic analyzer, and code generator are able to work with the follwing tokens:
+* Numbers (Integers (24234) and Doubles (234.345))
+* Addition ('+')
+* Subtraction ('-')
+* Multiplication ('*')
+* Division ('/')
+* Exponents ('^' (the power cannot contain a variable))
+* Parentheses ( '(' and ')' )
 
-
-## Code Generator
-The default code generator writes x86-64 machine code from the tree generated from the default lexer and parser. **Ensure that the code generator is compatible with the lexer, parser, and semantic analyzer**
+Using custom aspects of the compiler, ensure that the:
+* Lexer is compatible with the Parser
+* Parser is compatible with the Semantic Analyzer
+* Parser with is compatible Code Generator
+* Message handler is compatible with the four message levels
 
 ## Message Handler
 The default message handler has four different levels of messages:
