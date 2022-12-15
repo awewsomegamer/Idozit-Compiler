@@ -1,5 +1,5 @@
 #include <messages.h>
-#include <design1.h>
+#include <idozit.h>
 
 void (*message_handler_function)(int, const char*, va_list) = NULL;
 

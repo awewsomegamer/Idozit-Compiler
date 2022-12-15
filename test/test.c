@@ -1,4 +1,4 @@
-#include <design1.h>
+#include <idozit.h>
 
 int main() {
         code_block_t code = compile(expression("INTEGRAL 1 x ( x^2 - 4 )", 1, "x"));

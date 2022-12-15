@@ -1,7 +1,7 @@
 #ifndef GENERATOR_H
 #define GENERATOR_H
 
-#include <design1.h>
+#include <idozit.h>
 
 /* code_block_t default_x86_64_generator(tree_code_t *tree) :
  * This will generate the given tree into a code buffer and a data buffer 

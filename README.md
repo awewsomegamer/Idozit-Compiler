@@ -17,4 +17,9 @@ This is a JIT compiler designed to be used within projects. Originally the aspec
 Further documentation about the process is available in PROCESS.md.<br>
 Further documentation about the default compiler is available in DEFAULT.md
  
-## 
+## Repository Contents
+`/test/` - A directory containing the test files (used during development)<br>
+`/src/` - Contains the source code of the library<br>
+`/sample_programs/` - Contains example programs / applications of the compiler<br>
+`/bin/library/` - Contains the binary files for the library (`libcidozit.a` is the linkable library file (c stands for compiler))<br>
+`./` - Contains .md files and ultimate Makefile

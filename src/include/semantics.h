@@ -1,7 +1,7 @@
 #ifndef SEMANTICS_H
 #define SEMANTICS_H
 
-#include <design1.h>
+#include <idozit.h>
 
 extern void (*validate_function)(tree_code_t *);
 

@@ -6,6 +6,9 @@ all:
 run: all
 	test/test.out
 
+examples: all
+	make -C sample_programs/
+	
 
 testing:
 	nasm -f elf64 -o test.nasm.o test.nasm

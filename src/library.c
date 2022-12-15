@@ -1,4 +1,4 @@
-#include <design1.h>
+#include <idozit.h>
 #include <lexer.h>
 #include <parser.h>
 #include <semantics.h>

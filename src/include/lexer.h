@@ -1,7 +1,7 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include <design1.h>
+#include <idozit.h>
 
 extern char *expression_string;
 extern char **variables_list;

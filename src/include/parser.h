@@ -1,7 +1,7 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include <design1.h>
+#include <idozit.h>
 
 extern tree_code_t * (*parse_function)();
 
