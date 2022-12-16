@@ -159,6 +159,7 @@ uint8_t tree_homogenous(tree_code_t *tree, uint64_t mark)
 void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t *parent)
 {
         int homogenous = 0;
+        
 
         if (tree != NULL && tree->parser_mark != mark) {
                 homogenous = tree_homogenous(tree, homogenous_mark);
@@ -319,13 +320,21 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                 goto REG_GEN;
                         } else {
                                 REG_GEN:
-                                var->type = T_EXPONENT;
-                                var->left = create_empty(T_VAR, var->value);
+                                var->type = T_DIV;
+                                var->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, 2));
+                                var->left->left->parser_mark = 3;
+                                var->left->right->parser_mark = 3;
+
                                 var->right = create_empty(T_INT, 2);
-                                
-                                var->parser_mark = 3;       
-                                var->left->parser_mark = 3;
                                 var->right->parser_mark = 3;
+                                var->parser_mark = 3;
+                                // var->type = T_EXPONENT;
+                                // var->left = create_empty(T_VAR, var->value);
+                                // var->right = create_empty(T_INT, 2);
+                                
+                                // var->parser_mark = 3;       
+                                // var->left->parser_mark = 3;
+                                // var->right->parser_mark = 3;
                         }
 
                         while (parent != NULL) {
@@ -334,8 +343,8 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                         }
                 } while (var != NULL);
 
-                tree_code_t* parent = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
-                parent_branch(tree, 3, 0, parent);
+                tree_code_t* parent_t = create_node(T_MUL, 0, 0, create_empty(T_VAR, respect_to), NULL);
+                parent_branch(tree, 3, 0, parent_t);
 
                 break;
         }

@@ -134,7 +134,7 @@ function: IDENTIFIER == reserved
 // Helpful
 #define FUNCTION(name, func, args) uint64_t (*name)args = func; // FUNCTION(my_func, func, (int, int, int))
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
-#define DEBUG 0
+#define DEBUG 1
 
 /* struct token :
  * The token structure used by the compiler.

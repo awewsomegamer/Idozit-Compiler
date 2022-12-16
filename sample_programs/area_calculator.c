@@ -11,5 +11,5 @@ int main(int argc, char** argv) {
         sprintf(expr_string, "INTEGRAL 1 x ( %s )", argv[1]);
 
         code_block_t code = compile(expression(expr_string, 1, "x"));
-        printf("The area under the curve %s is %f.\n", argv[1], (run(code, atof(argv[3]) - run(code, atof(argv[2])))));
+        printf("The area under the curve %s is %f.\n", argv[1], run(code, atof(argv[3])) - run(code, atof(argv[2])));
 }
