@@ -20,6 +20,10 @@ Further documentation about the default compiler is available in DEFAULT.md
 ## Repository Contents
 `/test/` - A directory containing the test files (used during development)<br>
 `/src/` - Contains the source code of the library<br>
-`/sample_programs/` - Contains example programs / applications of the compiler<br>
+`/example_programs/` - Contains example programs / applications of the compiler<br>
 `/bin/library/` - Contains the binary files for the library (`libcidozit.a` is the linkable library file (c stands for compiler))<br>
 `./` - Contains .md files and ultimate Makefile
+
+## Example programs
+* `area_calc.out` - Asks for the function of a curve and the lower and upper bounds of an interval, and when ran will calculate the area under the curve within the given interval.
+* `the_visualizer.out` - Asks for a function (which can use the following variables: x(-coord), y(-coord), t(ick or time)) and an increment amount for the t(ick or time) variable. When ran it will display a 640x480 window and apply the given function to every pixel's color within the window.

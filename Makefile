@@ -7,7 +7,7 @@ run: all
 	test/test.out
 
 examples: all
-	make -C sample_programs/
+	make -C example_programs/
 	
 
 testing:
