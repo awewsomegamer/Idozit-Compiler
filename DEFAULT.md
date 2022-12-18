@@ -9,6 +9,7 @@ The lexer, parser, semantic analyzer, and code generator are able to work with t
 * Division ('/')
 * Exponents ('^' (the power cannot contain a variable))
 * Parentheses ( '(' and ')' )
+* Functions (INTEGRAL and DERIVATIVE)
 
 Using custom aspects of the compiler, ensure that the:
 * Lexer is compatible with the Parser
@@ -34,3 +35,22 @@ Is a message type letting the programmer know of a possible problem within their
 
 ### Debug
 Is a message type that is not printed when the DEBUG definition in design1.h is set to 0. This type of message lets the programmer know of the current step the compiler is taking.
+
+## Default language
+A program using the default compiler may look something like this:
+`5 + (5.1 - x) * DERIVATIVE 1 x (x) / INTEGRAL 1 x (x)`<br>
+As explained in the lexer, parser, semantic analyzer, and code generator section, programs can consist of:
+* Constants (Integers, Doubles)
+* Operators ( +, -, *, /, (, ) )
+* Functions (DERIVATIVE and INTEGRAL)<br>
+
+Constants and opertors are fairly self explanatory, but functions have some specification, which is as follows:
+`FUNC DEGREE RESPECT ( EXPRESSION )`.<br>
+In the above description:
+* `FUNC` - String that specifies what function to apply to the given expression
+* `DEGREE` - Integer value that specifies how many times the function is applied (e.g. second integral would have a degree of 2)
+* `RESPECT` - Variable that specifies to which variable the function has respect to (for `x^2 + y`, the integral would be `x^3/3 + y * x`)
+* Parentheses - Mandatory to specify the start and end of the expression
+* `EXPRESSION` - The expression that the function is being applied to
+
+

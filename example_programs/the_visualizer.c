@@ -35,8 +35,17 @@ void render() {
  * INTEGRAL 1 x (x + t) * 100 (0.1)
  * INTEGRAL 1 x (x + t * y) (0.1)
  * INTEGRAL 1 x (x + t * y) (0.0001)
+ *
+ * DERIVATIVE 1 x (x^2 * t - 1) + 500 * 0.94 + t (0.01) 
+ * DERIVATIVE 1 x (x^2 / t - 1) + 500 * 0.94 + t (1) 
+ *       
+ * x * t + y (0.1)
+ * x * t - y (0.1)
+ * x * t * y (0.1)
+ * x * t / y (0.1, 1)
+ *       
+ * x * t + y^2 (0.1, 1, 2)
  */
-
 void* vram_update(void* args) {
         while (running) {
                 for (double i = 0; i < 480; i++) {
