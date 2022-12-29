@@ -212,7 +212,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x10);
                 append_byte(0x85 + ((reg % 8) * 8));
                 
-                uint32_t offset = ((uint32_t)tree->value * 8 + 0x18);
+                uint32_t offset = ((uint32_t)(tree->value + 1) * 8 + 0x8);
                 
                 for (int i = 0; i < 4; i++) {
                         append_byte(((offset) >> (8 * i)) & 0xFF);
@@ -358,7 +358,7 @@ void fill_references()
         }
 }
 
-code_block_t default_x86_64_generator(tree_code_t *tree)
+code_block_t default_x86_64_generator(tree_code_t *tree, int var_count)
 {
         code_block_t* ret = malloc(sizeof(code_block_t));
         buffer = malloc(1);
@@ -374,7 +374,21 @@ code_block_t default_x86_64_generator(tree_code_t *tree)
         append_byte(0x89);
         append_byte(0xE5);
         
+        // // SUB RSP, var_count * 8
+        // uint32_t offset = (var_count) * 8;
+        // append_byte(0x48);
+        // append_byte(0x81);
+        // append_byte(0xEC);
+        // for (int i = 0; i < 4; i++) {
+        //         append_byte((offset >> (i * 8)) & 0xFF);
+        // }
+
         evaluate(tree);
+
+        // MOV RSP, RBP
+        append_byte(0x48);
+        append_byte(0x89);
+        append_byte(0xEC);
 
         // POP RBP
         append_byte(0x5D);

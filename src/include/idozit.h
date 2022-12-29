@@ -255,11 +255,12 @@ void set_parser(tree_code_t * (*)());
  */
 void set_semantic_analyzer(void (*)(tree_code_t *));
 
-/* void set_code_generator(code_bloc_t (*generator)(tree_code_t*)) :
+/* void set_code_generator(code_bloc_t (*generator)(tree_code_t*, int)) :
  * Sets the code generator to the given code generator
  * Setting it to NULL resets it to the default code generator
+ * The second operand is the number of arguemtns for a given tree
  */
-void set_code_generator(code_block_t (*)(tree_code_t *));
+void set_code_generator(code_block_t (*)(tree_code_t *, int));
 
 /* void set_message_handler(void*) :
  * This function will set the message handler to the given function.

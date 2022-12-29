@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 // Custom code generator function pointer
-code_block_t (*code_generator)(tree_code_t *) = NULL;
+code_block_t (*code_generator)(tree_code_t *, int) = NULL;
 
 context_t expression(const char *form, int var_count, ...)
 {
@@ -47,9 +47,9 @@ code_block_t compile(context_t context)
         code_block_t ret;
 
         if (code_generator == NULL)
-                ret = default_x86_64_generator(context.head);
+                ret = default_x86_64_generator(context.head, context.var_count);
         else
-                ret = (*code_generator)(context.head);
+                ret = (*code_generator)(context.head, context.var_count);
 
         ret.var_count = context.var_count;
 
@@ -59,10 +59,10 @@ code_block_t compile(context_t context)
 double run(code_block_t code, ...)
 {
         void *buf;
-	buf = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	buf = mmap(0, code.code_size + code.data_size + (code.var_count * 8), PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	memcpy(buf, code.func, code.code_size);
         memcpy(buf + code.code_size, code.data, code.data_size);
-
+        
         // Print machine code + data
         char* machine_code_string = malloc((code.code_size + code.data_size) * 3);
         for (int i = 0; i < code.code_size + code.data_size; i++)
@@ -72,6 +72,10 @@ double run(code_block_t code, ...)
         va_list args;
         va_start(args, code);
 
+        asm("push rcx;    \
+             mov rcx, %0;" : : "a"((uintptr_t)buf + code.code_size) :);
+
+        // Push variables onto the stack
         for (int i = 0; i < code.var_count; i++) {
                 uint64_t bytes_double;
                 double arg = va_arg(args, double);
@@ -80,10 +84,12 @@ double run(code_block_t code, ...)
                 asm("push %0" : : "a"(bytes_double) :);
         }
 
-        asm("push rcx;    \
-             mov rcx, %0;" : : "a"((uintptr_t)buf + code.code_size) :);
-
         double result = ((double (*) (void))buf)();
+        
+        // Pop variables off the stack (find better solution)
+        for (int i = 0; i < code.var_count; i++) {
+                asm("pop rdx" : : : "rdx");
+        }
 
         asm("pop rcx");
 
@@ -107,7 +113,7 @@ void set_semantic_analyzer(void (*func)(tree_code_t *))
         _set_validate_function(func);
 }
 
-void set_code_generator(code_block_t (*func)(tree_code_t *))
+void set_code_generator(code_block_t (*func)(tree_code_t *, int))
 {
         code_generator = func;
 }
