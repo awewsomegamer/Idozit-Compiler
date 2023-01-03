@@ -59,7 +59,7 @@ code_block_t compile(context_t context)
 double run(code_block_t code, ...)
 {
         void *buf;
-	buf = mmap(0, code.code_size + code.data_size + (code.var_count * 8), PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+	buf = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
 	memcpy(buf, code.func, code.code_size);
         memcpy(buf + code.code_size, code.data, code.data_size);
         
@@ -68,6 +68,7 @@ double run(code_block_t code, ...)
         for (int i = 0; i < code.code_size + code.data_size; i++)
                 sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)buf) + i));
         message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
+        free(machine_code_string);
 
         va_list args;
         va_start(args, code);
@@ -87,9 +88,8 @@ double run(code_block_t code, ...)
         double result = ((double (*) (void))buf)();
         
         // Pop variables off the stack (find better solution)
-        for (int i = 0; i < code.var_count; i++) {
-                asm("pop rdx" : : : "rdx");
-        }
+        for (int i = 0; i < code.var_count; i++)
+                asm("pop rax" : : : "rax");
 
         asm("pop rcx");
 

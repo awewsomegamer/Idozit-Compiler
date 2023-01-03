@@ -8,6 +8,7 @@
                 "string.h": "c",
                 "design1.h": "c",
                 "semantics.h": "c",
-                "lexer.h": "c"
+                "lexer.h": "c",
+                "sdl.h": "c"
         }
 }

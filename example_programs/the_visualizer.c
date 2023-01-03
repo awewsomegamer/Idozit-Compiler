@@ -50,7 +50,7 @@ void* vram_update(void* args) {
         while (running) {
                 for (double i = 0; i < 480; i++) {
                         for (double j = 0; j < 640; j++) {
-                                VRAM[(int)i][(int)j] += run(code, j, i, t) / 2;
+                                VRAM[(int)i][(int)j] += run(code, j, i, t);
                         }
                 }
 
@@ -72,7 +72,7 @@ int main(int argc, char** argv) {
 
         pthread_t thread;
         pthread_create(&thread, NULL, vram_update, NULL);
-
+        
         while (running) {
                 update();
                 render();
