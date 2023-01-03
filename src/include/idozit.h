@@ -184,16 +184,18 @@ typedef struct context context_t;
  * struct code_block :
  * A structure representing a compiled block of machine code.
  *
- * func       : A pointer to the function to call to run the equation
- * data       : A pointer to the data section of the function
+ * code       : A pointer to the function to call to run the equation
+ * data       : A pointer to the data of the function
+ * func       : A function pointer to the executable buffer (code + data)
  * code_size  : Size in bytes of the code, func
  * data_size  : Size in bytes of the data, data
  * var_count  : Number of variables
  */
 struct code_block
 {
-    uint8_t *func;
+    uint8_t *code;
     uint8_t *data;
+    void *func;
     size_t code_size;
     size_t data_size;
     int var_count;

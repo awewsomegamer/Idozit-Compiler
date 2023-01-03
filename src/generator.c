@@ -399,7 +399,7 @@ code_block_t default_x86_64_generator(tree_code_t *tree, int var_count)
         // Fill in the missing references
         fill_references();
 
-        ret->func = buffer;
+        ret->code = buffer;
         ret->data = data_buffer;
         ret->code_size = position;
         ret->data_size = data_position;
