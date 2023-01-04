@@ -10,16 +10,11 @@ char **variables_list = NULL;
 uint32_t variable_count = 0;
 uint32_t expression_ptr = 0;
 
+// Custom lex function
 int (*lex_function)(token_t *) = NULL;
 
-/* char next_char() :
- * Returns the next character in the
- * expreesion_string character stream
- */
-char next_char()
-{
-	return *(expression_string + expression_ptr++);
-}
+// Get the next cdhar in the stream (expression_string)
+#define NEXT_CHAR *(expression_string + expression_ptr++)
 
 /* char next_solid_char() :
  * Returns the next non-whitespace character
@@ -28,10 +23,10 @@ char next_char()
  */
 char next_solid_char()
 {
-	char c = next_char();
+	char c = NEXT_CHAR;
 
 	while (c == ' ' || c == '\t')
-		c = next_char();
+		c = NEXT_CHAR;
 
 	return c;
 }
@@ -49,9 +44,10 @@ char* get_string(char c)
 	int count = 1;
 
 	while (isalnum(c) || c == '.') {
-		c = next_char();
+		c = NEXT_CHAR;
 
-		if (!isalnum(c) && c != '.') break;
+		if (!isalnum(c) && c != '.')
+			break;
 
 		count++;
 		string = realloc(string, count);
@@ -108,7 +104,7 @@ int lex(token_t *token)
 		return 1;
 
 	default:
-		char* string = get_string(c);
+		char *string = get_string(c);
 
 		// Is this string one of the given variables?
 		for (int i = 0; i < variable_count; i++)
@@ -128,13 +124,14 @@ int lex(token_t *token)
 				return 1;
 			}
 
+
 		// If this string is representing a number,
 		// return a number token, with the double
 		// value of the string
 		uint8_t decimal = 0;
-		if (isdigit(*string) || (decimal = (*string == '.'))) {
+		if (isdigit(*string) || (decimal = ((*string == '.') || (*string + strlen(string) == '.')))) {
 			for (int i = 0; i < strlen(string); i++)
-				if (*(string + i) == '.') {
+				if (*(string + i) == '.'|| decimal) {
 					decimal = 1;
 					break;
 				}

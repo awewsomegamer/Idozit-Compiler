@@ -68,12 +68,9 @@ double run(code_block_t code, ...)
         // TODO: Allow code blocks to have pointers to their function
         //       so that below code does not need to be executed over
         //       and over again for every call.
-
-        // if (code.func == NULL) {
-                code.func = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-                memcpy(code.func, code.code, code.code_size);
-                memcpy(code.func + code.code_size, code.data, code.data_size);
-        // }
+        code.func = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+        memcpy(code.func, code.code, code.code_size);
+        memcpy(code.func + code.code_size, code.data, code.data_size);
         
         // Print machine code + data
         if (DEBUG) {
@@ -98,6 +95,7 @@ double run(code_block_t code, ...)
 
                 asm("push %0" : : "a"(bytes_double) :);
         }
+
 
         double result = ((double (*) (void))code.func)();
         

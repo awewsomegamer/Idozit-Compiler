@@ -199,7 +199,7 @@ struct code_block
     size_t code_size;
     size_t data_size;
     int var_count;
-};
+}__attribute__((packed));
 typedef struct code_block code_block_t;
 
 /* context_t expression(const char *form, int var_count, ...) :
