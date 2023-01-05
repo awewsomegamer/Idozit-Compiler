@@ -8,9 +8,10 @@
 token_t *current_token = NULL;
 token_t *last_token = NULL;
 
+// The user's parser function
 tree_code_t * (*parse_function)() = NULL;
 
-// Functions to manipulate nodes
+// Helpers to manipulate nodes
 tree_code_t *create_node(int type, double value, uint64_t parser_mark, tree_code_t *left, tree_code_t *right)
 {
         tree_code_t *node = malloc(sizeof(tree_code_t));
@@ -33,7 +34,6 @@ void free_tree(tree_code_t* tree) {
 
         free(tree);
 }
-
 
 /* uint8_t accept(uint8_t type) :
  * Is the current token's type == the given type?
@@ -61,18 +61,22 @@ uint8_t accept(uint8_t type)
  */
 void expect(uint8_t type)
 {
+        // Check if the token is correct, if so return
         if (accept(type))
                 return;
 
+        // Create a string to with a segment of the incorrect grammar in it
         const size_t length = (strlen(expression_string) <= 20 ? strlen(expression_string) : 20);
         char *section = malloc(length + 21);
         memset(section, ' ', length + 21);
         memcpy(section, expression_string + expression_ptr - (length / 2 + 1), length);
 
+        // Make sure string is not terminated prematurely
         for (int i = 0; i < length; i++)
                 if (*(section + i) == 0)
                         *(section + i) = ' ';
 
+        // Add arrow pointing to error
         *(section + 20) = '\n';
         *(section + 21 + length / 2) = '^';
 
@@ -88,10 +92,11 @@ double evaluate_tree(tree_code_t *head);
 
 tree_code_t *exponent(tree_code_t *ret)
 {
+        // Generate exponent
         tree_code_t* exponent_ret = create_empty(T_EXPONENT, 0);
         exponent_ret->left = ret;
         exponent_ret->right = term();
-
+        
         ret->parent = exponent_ret;
         exponent_ret->right->parent = exponent_ret;
 
@@ -174,10 +179,11 @@ void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, t
 {
         int homogenous = 0;
         
-
+        // Check if requirements for base tree are met
         if (tree != NULL && tree->parser_mark != mark) {
                 homogenous = tree_homogenous(tree, homogenous_mark);
                 
+                // Parent the tree
                 tree_code_t *tmp = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
                 
                 tree->type = parent->type;
@@ -195,6 +201,7 @@ void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, t
                 }
         }
 
+        // Recursively go down if the above if statement was not executed
         if (!homogenous && tree->left != NULL) parent_branch(tree->left, mark, homogenous_mark, parent);
         if (!homogenous && tree->right != NULL) parent_branch(tree->right, mark, homogenous_mark, parent);
 }
@@ -321,11 +328,13 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                         opposite->type = T_NUMBER;
                                 }
                                 
+                                // Flip variable to be on the left
                                 if (opposite == parent->left) {
                                         parent->left = var;
                                         parent->right = opposite;
                                 }
 
+                                // Get rid of multiplication if it is by 1 (implement 0 here as well)
                                 if (opposite->value == 1) {
                                         parent->value = var->value;
                                         var = parent;
@@ -342,13 +351,6 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                 var->right = create_empty(T_INT, 2);
                                 var->right->parser_mark = 3;
                                 var->parser_mark = 3;
-                                // var->type = T_EXPONENT;
-                                // var->left = create_empty(T_VAR, var->value);
-                                // var->right = create_empty(T_INT, 2);
-                                
-                                // var->parser_mark = 3;       
-                                // var->left->parser_mark = 3;
-                                // var->right->parser_mark = 3;
                         }
 
                         while (parent != NULL) {
@@ -374,10 +376,12 @@ tree_code_t *term()
                 // ( EXPRESSION )
 
                 message(MESSAGE_DEBUG, "LPAREN\n");
+                // If the lparen isn't immediately terminated, get expression tree
                 if (current_token->type != T_RPAREN)
                         ret = addition();
                 expect(T_RPAREN);
 
+                // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
@@ -388,6 +392,7 @@ tree_code_t *term()
                 ret->value = last_token->value;
                 message(MESSAGE_DEBUG, "NUMBER %f\n", ret->value);
 
+                // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
@@ -399,6 +404,7 @@ tree_code_t *term()
                 ret->type = T_VAR;
                 ret->value = last_token->value;
                 
+                // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
@@ -409,21 +415,27 @@ tree_code_t *term()
 
                 int func = last_token->value;
 
+                // Get degree of the function (apply once, twice, so on)
                 int degree = 1;
                 if (accept(T_INT))
                         degree = last_token->value;
                 
+                // Get respected variable
                 expect(T_VAR);
                 int respect_to = last_token->value;
 
+                // Get body
                 expect(T_LPAREN);
                 ret = addition();
                 expect(T_RPAREN);
                 
-                apply_function(func, degree, respect_to, ret); 
+                // Naiive approach (many optimizations required and doesn't work)
+                for (int i = 0; i < degree; i++)
+                        apply_function(func, degree, respect_to, ret); 
                 
                 reset_parser_marks(ret);
 
+                // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
 
                 return ret;
@@ -439,6 +451,7 @@ tree_code_t *multiplication()
         
         message(MESSAGE_DEBUG, "MULTIPLICATION / DIVISION\n");
 
+        // Check if recursion to the right should happen if so encode the operator
         cont_loop = accept(T_MUL);
         cont_loop += accept(T_DIV) << 1;
 
@@ -447,6 +460,7 @@ tree_code_t *multiplication()
 
         right = multiplication();
 
+        // Create parent node
         tree_code_t *tree = create_node(((cont_loop & 1) ? T_MUL : T_DIV), 0, 0, left, right);
         
         left->parent = tree;
@@ -464,6 +478,7 @@ tree_code_t *addition()
 
         message(MESSAGE_DEBUG, "ADDITION / SUBTRACTION\n");
         
+        // Check if recursion to the right should happen and if so encode the operator
         cont_loop = accept(T_ADD);
         cont_loop += accept(T_SUB) << 1;
 
@@ -472,6 +487,7 @@ tree_code_t *addition()
 
         right = addition();
 
+        // Generate parent tree
         tree_code_t *tree = create_node(((cont_loop & 1) ? T_ADD : T_SUB), 0, 0, left, right);
         
         left->parent = tree;
@@ -482,14 +498,12 @@ tree_code_t *addition()
 
 tree_code_t *build_tree()
 {
-        if (parse_function != NULL)
-                return (*parse_function)();
-
         current_token = malloc(sizeof(token_t));
         last_token = malloc(sizeof(token_t));
         lex(current_token);
 
-        tree_code_t* tree = addition();
+        // Parse using either the user's specified function or the default one
+        tree_code_t* tree = (parse_function == NULL ? addition() : (*parse_function)());
 
         free(current_token);
         free(last_token);
