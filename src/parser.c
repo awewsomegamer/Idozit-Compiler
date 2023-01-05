@@ -64,16 +64,17 @@ void expect(uint8_t type)
         if (accept(type))
                 return;
 
-        char *section = malloc(41);
-        memset(section, ' ', 41);
-        memcpy(section, expression_string + expression_ptr - 9, 20);
+        const size_t length = (strlen(expression_string) <= 20 ? strlen(expression_string) : 20);
+        char *section = malloc(length + 21);
+        memset(section, ' ', length + 21);
+        memcpy(section, expression_string + expression_ptr - (length / 2 + 1), length);
 
-        for (int i = 0; i < 41; i++)
+        for (int i = 0; i < length; i++)
                 if (*(section + i) == 0)
                         *(section + i) = ' ';
 
         *(section + 20) = '\n';
-        *(section + 21 + (expression_ptr - (expression_ptr - 8))) = '^';
+        *(section + 21 + length / 2) = '^';
 
         message(MESSAGE_FATAL, "Expected token type %d (%s) instead of %d (%s) at character %d\n%s\n", 
         type, TOKEN_NAMES[type], current_token->type, TOKEN_NAMES[current_token->type], expression_ptr + 1,
