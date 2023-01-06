@@ -1,5 +1,9 @@
+[bits 64]
 [global do_the_float]
 do_the_float:
+        lea rax, [rel do_the_float]
+        jmp rax
+
         ;mov rax, float_number
 
         ; movsd xmm0, qword [float_number]
@@ -31,7 +35,7 @@ do_the_float:
 ;
         ;mov rax, $
 
-        ret
+        ;ret
 
-float_number:
-        db 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x14, 0x40
+;float_number:
+;        db 0x66, 0x66, 0x66, 0x66, 0x66, 0x66, 0x14, 0x40

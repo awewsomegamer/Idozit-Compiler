@@ -35,14 +35,15 @@ int xmm_reg[16];
 
 int allocate_reg()
 {
+        // TODO: Add handling if all registers are used
+
         for (int i = 0; i < 16; i++)
                 if (xmm_reg[i] != 1) {
                         xmm_reg[i] = 1;
                         return i;
                 }
 
-        message(MESSAGE_FATAL, "No registers free\n");
-                        
+        message(MESSAGE_FATAL, "No registers free\n");        
 }
 
 void free_reg(int reg)
@@ -134,26 +135,23 @@ int evaluate(tree_code_t *tree)
         double vleft = 0, vright = 0;
         uint8_t left_info = 0, right_info = 0;
 
-        int start_pointer = position;
-
+        // Generate to the left
         if (tree->left != NULL) {
                 left = evaluate(tree->left);
                 vleft = numerical_evaluation(tree->left, &left_info);
         }
 
-        int left_add_pointer = position;
-
+        // Generate to the right
         if (tree->right != NULL && tree->type != T_EXPONENT){
                 right = evaluate(tree->right);
                 vright = numerical_evaluation(tree->right, &right_info);
         }
 
-        int right_add_pointer = position;
-
         switch (tree->type) {
         case T_INT: {
                 INTEGER_CONSTANT_GENERATION:
                 if ((int)tree->value != 0) {
+                        // MOV RAX, dword
                         append_byte(0x48);
                         append_byte(0xC7);
                         append_byte(0xC0);
@@ -163,11 +161,13 @@ int evaluate(tree_code_t *tree)
                                 append_byte(((value >> (8 * i)) & 0xFF));
                         }
                 } else {
+                        // XOR RAX, RAX
                         append_byte(0x48);
                         append_byte(0x31);
                         append_byte(0xC0);
                 }
 
+                // CVTSI2SD XMMR, RAX
                 int reg = allocate_reg();
 
                 append_byte(0xF2);
@@ -181,6 +181,7 @@ int evaluate(tree_code_t *tree)
 
         case T_NUMBER: {
                 DOUBLE_CONSTANT_GENERATION:
+                // MOVSD XMMR, [RCX +  N] ; N is dword marked as a reference (RCX is used as a base address for the data buffer) 
                 append_byte(0xF2);
                 append_byte(0x0F);
 
@@ -200,6 +201,7 @@ int evaluate(tree_code_t *tree)
         }
 
         case T_VAR: {
+                // MOVSD XMMR, [RBP + (V * 0x8)] ; V is the index of the variable in list provided in expression function
                 int reg = allocate_reg();
 
                 append_byte(0xF2);
@@ -222,6 +224,7 @@ int evaluate(tree_code_t *tree)
         }
 
         case T_ADD:
+                // ADDSD left, right
                 append_byte(0xF2);
 
                 if (left >= 8) {
@@ -237,6 +240,7 @@ int evaluate(tree_code_t *tree)
                 return left;
 
         case T_SUB:
+                // SUBSD left, right
                 append_byte(0xF2);
                 
                 if (left >= 8) {
@@ -252,6 +256,7 @@ int evaluate(tree_code_t *tree)
                 return left;
 
         case T_MUL:
+                // MULSD left, right
                 append_byte(0xF2);
 
                 if (left >= 8) {
@@ -267,6 +272,7 @@ int evaluate(tree_code_t *tree)
                 return left;
 
         case T_DIV:
+                // DIVSD left, right
                 append_byte(0xF2);
 
                 if (left >= 8) {
@@ -285,6 +291,8 @@ int evaluate(tree_code_t *tree)
                 uint8_t flags = 0;
                 int repetitions = numerical_evaluation(tree->right, &flags) - 1;
                 int reg = 0;
+
+                // TODO: More than 4 repetitions should get a loop
 
                 if (repetitions >= 2) {
                         reg = allocate_reg();
@@ -330,6 +338,8 @@ void fill_references()
         int present_reference_count = 0;
 
         for (int i = 0; i < reference_count; i++) {
+                // Check if the reference has already been inserted into the data buffer
+                // if so, just go fill it in with the proper offset
                 int present_reference_idx = -1;
                 for (int j = 0; j < present_reference_count; j++)
                         if (present_references[j].value == references[i].value) {
@@ -337,6 +347,7 @@ void fill_references()
                                 goto FILL_REFERENCE;
                         }
 
+                // The reference is not yet present in the data buffer, so add it
                 present_references = realloc(present_references, sizeof(struct reference) * (++present_reference_count));
                 present_references[present_reference_count - 1].position = data_position;
                 present_references[present_reference_count - 1].value = references[i].value;
@@ -373,16 +384,8 @@ code_block_t default_x86_64_generator(tree_code_t *tree, int var_count)
         append_byte(0x48);
         append_byte(0x89);
         append_byte(0xE5);
-        
-        // // SUB RSP, var_count * 8
-        // uint32_t offset = (var_count) * 8;
-        // append_byte(0x48);
-        // append_byte(0x81);
-        // append_byte(0xEC);
-        // for (int i = 0; i < 4; i++) {
-        //         append_byte((offset >> (i * 8)) & 0xFF);
-        // }
 
+        // Convert tree to x86-64 machine code        
         evaluate(tree);
 
         // MOV RSP, RBP
