@@ -32,23 +32,50 @@ void insert_reference(double value, uint64_t position)
 }
 
 int xmm_reg[16];
+int spill = 0;
 
 int allocate_reg()
 {
-        // TODO: Add handling if all registers are used
-
         for (int i = 0; i < 16; i++)
                 if (xmm_reg[i] != 1) {
                         xmm_reg[i] = 1;
                         return i;
                 }
 
-        message(MESSAGE_FATAL, "No registers free\n");        
+        // Register spill
+        int reg = (spill++ % 16) * 8;
+
+        // MOVQ RAX, XMMR
+        append_byte(0x66);
+        append_byte(0x48);
+        append_byte(0x0F)
+        append_byte(0x7E);
+        append_byte(0xC0 + reg);
+
+        // PUSH RAX
+        append_byte(0x55);
+
+        return reg;
 }
 
 void free_reg(int reg)
 {
-        xmm_reg[reg] = 0;
+        if (spill > 0) {
+                // Register unspill
+                
+                int reg = ((--spill) % 16) * 8;
+                // POP RAX
+                append_byte(0x58);
+
+                // MOVQ XMMR, RAX
+                append_byte(0x66);
+                append_byte(0x48);
+                append_byte(0x0F)
+                append_byte(0x7E);
+                append_byte(0xC0 + reg);
+        } else {
+                xmm_reg[reg] = 0;
+        }
 }
 
 // Flags:
