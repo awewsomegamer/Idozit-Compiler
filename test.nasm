@@ -1,8 +1,11 @@
 [bits 64]
 [global do_the_float]
 do_the_float:
-        lea rax, [rel do_the_float]
-        jmp rax
+        jnz -4
+        ret
+
+        ;lea rax, [rel do_the_float]
+        ;jmp rax
 
         ;mov rax, float_number
 

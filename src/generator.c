@@ -222,7 +222,10 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x04 + ((reg % 8) * 8));
                 append_byte(0x0D);
                 insert_reference(tree->value, position);
-                for(int i = 0; i < 4; i++) append_byte(0x00);
+
+                for(int i = 0; i < 4; i++) {
+                        append_byte(0x00);
+                }
 
                 return reg;
         }
@@ -319,8 +322,6 @@ int evaluate(tree_code_t *tree)
                 int repetitions = numerical_evaluation(tree->right, &flags) - 1;
                 int reg = 0;
 
-                // TODO: More than 4 repetitions should get a loop
-
                 if (repetitions >= 2) {
                         reg = allocate_reg();
 
@@ -335,11 +336,48 @@ int evaluate(tree_code_t *tree)
                         append_byte(0xC0 + left + ((reg % 8) * 8));  
                 }
 
+                // TODO: More than 4 repetitions should get a loop
+                if (repetitions > 4) {
+                        // MOV R8, repetitions
+                        append_byte(0x49);
+                        append_byte(0xC7);
+                        append_byte(0xC0);
+                        for (int i = 0; i < 4; i++) {
+                                append_byte(((repetitions >> (8 * i)) & 0xFF));
+                        }
+
+                        // MULSD XMMR, REG
+                        append_byte(0xF2); // 8
+
+                        if (left >= 8 || right >= 8 || reg >= 8) {
+                                append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4)); // 7?
+                        }
+
+                        append_byte(0x0F); // 6
+                        append_byte(0x59); // 5
+                        append_byte(0xC0 + reg + ((left % 8) * 8)); // 4
+
+                        // SUB R8, 1
+                        append_byte(0x49); // 3
+                        append_byte(0xFF); // 2
+                        append_byte(0xC8); // 1
+
+                        // JNZ 
+                        append_byte(0x0F); // 0
+                        append_byte(0x85);
+                        append_byte(0xFF - 7 - (right >= 8 || reg >= 8 || left >= 8) - 5);
+                        append_byte(0xFF);
+                        append_byte(0xFF);
+                        append_byte(0xFF);
+
+                        return left;
+                }
+
                 for (int i = 0; i < repetitions; i++) {
                         append_byte(0xF2);
 
-                        if (left >= 8) {
-                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
+                        if (left >= 8 || right >= 8 || reg >= 8) {
+                                append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4));
                         }
 
                         append_byte(0x0F);
