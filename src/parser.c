@@ -429,11 +429,16 @@ tree_code_t *term()
                 ret = addition();
                 expect(T_RPAREN);
                 
-                // Naiive approach (many optimizations required and doesn't work)
-                for (int i = 0; i < degree; i++)
+                // Naiive approach
+                if (degree > 1 && func == T_FUNC_INTEGRAL) {
+                        message(MESSAGE_ERROR, "Using funcion INTEGRAL with a degree > 1 causes segfaults, not applying function");
+                        return ret;
+                }
+
+                for (int i = 0; i < degree; i++) {
                         apply_function(func, degree, respect_to, ret); 
-                
-                reset_parser_marks(ret);
+                        reset_parser_marks(ret);
+                }
 
                 // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
