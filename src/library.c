@@ -65,9 +65,10 @@ code_block_t compile(context_t context)
 double run(code_block_t code, ...)
 {      
         // Create executable buffer
-        // TODO: Allow code blocks to have pointers to their function
-        //       so that below code does not need to be executed over
-        //       and over again for every call.
+        // TODO: Add UUIDs to code blocks, keep track of the UUID here
+        // if the same function was called, do not allocate
+        // if a different function was called, free and allocate the new function
+        // and have a function designed to cleanup after everything is done
         code.func = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
         memcpy(code.func, code.code, code.code_size);
         memcpy(code.func + code.code_size, code.data, code.data_size);
@@ -100,6 +101,7 @@ double run(code_block_t code, ...)
         double result = ((double (*) (void))code.func)();
         
         // Pop variables off the stack (find better solution -> move RSP manually)
+        // TODO: do this in an assembly file
         for (int i = 0; i < code.var_count; i++)
                 asm("pop rax" : : : "rax");
 
