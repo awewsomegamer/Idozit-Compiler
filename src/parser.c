@@ -239,9 +239,13 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                         parent->type = T_MUL;
 
                                         parent->left = create_node(T_EXPONENT, 0, 0, create_empty(T_VAR, respect_to), create_empty(T_INT, value));
+                                        parent->left->left->parent = parent->left;
+                                        parent->left->right->parent = parent->left;
+                                       
                                         parent->left->left->parser_mark = 1;
 
                                         parent->right = create_empty(T_INT, (value + 1));
+                                        parent->right->parent = parent;
 
                                         parent->parser_mark = 2;
                                 } else if (value == 1) {
@@ -251,9 +255,11 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
 
                                         parent->type = T_MUL;
                                         parent->left = create_empty(T_VAR, respect_to);
+                                        parent->left->parent = parent;
                                         parent->left->parser_mark = 1;
 
                                         parent->right = create_empty(T_INT, (value + 1));
+                                        parent->right->parent = parent;
                                         parent->parser_mark = 2;
                                 } else {
                                         // (value + 1)
@@ -297,29 +303,43 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                         // Find the variables
                         var = find_node(tree, T_VAR, respect_to, 0);
 
-                        if (var == NULL) break;
+                        if (var == NULL)
+                                break;
 
                         parent = var->parent;
-
                         if (parent != NULL) {
-                                if (var == parent->left) opposite = parent->right;
-                                if (var == parent->right) opposite = parent->left;
+                                if (var == parent->left)
+                                        opposite = parent->right;
+                                else if (var == parent->right)
+                                        opposite = parent->left;
                         }
 
                         if (parent != NULL && parent->type == T_EXPONENT) {
-                                // x^2 -> x^3/3
+                                // x^2 -> x^3/3, 1/2x^2 -> 1/6x^3
+
                                 int value = evaluate_tree(parent->right) + 1;
 
-                                parent->type = T_DIV;
-                                parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
-                                parent->right = create_empty(T_INT, value);
-                                parent->left->left->parser_mark = 1;
+                                if (parent->parent != NULL && parent->parent->type == T_DIV) {
+                                        parent = parent->parent;
+
+                                        parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
+                                        parent->right->value *= value;
+                                } else {
+                                        parent->type = T_DIV;
+                                        parent->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, value));
+                                        parent->right = create_empty(T_INT, value);
+                                }
+
+                                parent->left->parent = parent;
+                                parent->right->parent = parent;
+                                parent->left->left->parent = parent->left;
+                                parent->left->right->parent = parent->left;
 
                                 parent->left->parser_mark = 3;
                                 parent->left->left->parser_mark = 3;
                                 parent->left->right->parser_mark = 3;
                                 parent->right->parser_mark = 3;
-                                parent->parser_mark = 3; 
+                                parent->parser_mark = 3;
                         } else if (parent != NULL && parent->type == T_MUL) {
                                 // 2 * x -> x^2, 3 * x^2 -> x^3, x*x -> x^2/2
 
@@ -345,10 +365,19 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                 REG_GEN:
                                 var->type = T_DIV;
                                 var->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, 2));
+                                var->left->parent = var;
+                                
+                                var->left->left->parent = var->left;
+                                var->left->right->parent = var->left;
+                                
                                 var->left->left->parser_mark = 3;
                                 var->left->right->parser_mark = 3;
-
+                                var->left->parser_mark = 3;
+                                
                                 var->right = create_empty(T_INT, 2);
+                                var->right->parent = var;
+                                
+                                var->right->parent = parent;
                                 var->right->parser_mark = 3;
                                 var->parser_mark = 3;
                         }
@@ -429,16 +458,17 @@ tree_code_t *term()
                 ret = addition();
                 expect(T_RPAREN);
                 
-                // Naiive approach
-                if (degree > 1 && func == T_FUNC_INTEGRAL) {
-                        message(MESSAGE_ERROR, "Using funcion INTEGRAL with a degree > 1 causes segfaults, not applying function");
-                        return ret;
-                }
+                // // Naiive approach
+                // if (degree > 1 && func == T_FUNC_INTEGRAL) {
+                //         message(MESSAGE_ERROR, "Using funcion INTEGRAL with a degree > 1 causes segfaults, not applying function");
+                //         return ret;
+                // }
 
                 for (int i = 0; i < degree; i++) {
                         apply_function(func, degree, respect_to, ret); 
                         reset_parser_marks(ret);
                 }
+
 
                 // Check for exponent
                 if (accept(T_EXPONENT)) return exponent(ret);
