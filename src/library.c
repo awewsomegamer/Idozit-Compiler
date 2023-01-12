@@ -8,9 +8,9 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
 // Custom code generator function pointer
 code_block_t (*code_generator)(tree_code_t *, int) = NULL;
+code_block_t *last_exec = NULL;
 
 context_t expression(const char *form, int var_count, ...)
 {
@@ -57,27 +57,32 @@ code_block_t compile(context_t context)
         else
                 ret = (*code_generator)(context.head, context.var_count);
 
+
         ret.var_count = context.var_count;
 
         return ret;
 }
 
-double run(code_block_t code, ...)
+double run(code_block_t *code, ...)
 {      
-        // Create executable buffer
-        // TODO: Add UUIDs to code blocks, keep track of the UUID here
-        // if the same function was called, do not allocate
-        // if a different function was called, free and allocate the new function
-        // and have a function designed to cleanup after everything is done
-        code.func = mmap(0, code.code_size + code.data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-        memcpy(code.func, code.code, code.code_size);
-        memcpy(code.func + code.code_size, code.data, code.data_size);
+        // Create a new executable buffer if we haven't ran anything or
+        // running a different function.
+        if (last_exec == NULL || last_exec != code) {
+                if (last_exec != NULL)
+                        munmap(0, last_exec->code_size + last_exec->data_size);
+
+                code->func = mmap(0, code->code_size + code->data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                memcpy(code->func, code->code, code->code_size);
+                memcpy(code->func + code->code_size, code->data, code->data_size);
+
+                last_exec = code;
+        }
         
         // Print machine code + data
         if (DEBUG) {
-                char* machine_code_string = malloc((code.code_size + code.data_size) * 3);
-                for (int i = 0; i < code.code_size + code.data_size; i++)
-                        sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)code.func) + i));
+                char* machine_code_string = malloc((code->code_size + code->data_size) * 3);
+                for (int i = 0; i < code->code_size + code->data_size; i++)
+                        sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)code->func) + i));
                 message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
                 free(machine_code_string);
         }
@@ -86,10 +91,10 @@ double run(code_block_t code, ...)
         va_start(args, code);
         
         asm("push rcx;    \
-             mov rcx, %0;" : : "a"((uintptr_t)code.func + code.code_size) :);
+             mov rcx, %0;" : : "a"((uintptr_t)code->func + code->code_size) :);
 
         // Push variables onto the stack
-        for (int i = 0; i < code.var_count; i++) {
+        for (int i = 0; i < code->var_count; i++) {
                 uint64_t bytes_double;
                 double arg = va_arg(args, double);
                 memcpy(&bytes_double, &arg, sizeof(uint64_t));
@@ -98,16 +103,14 @@ double run(code_block_t code, ...)
         }
 
 
-        double result = ((double (*) (void))code.func)();
+        double result = ((double (*) (void))code->func)();
         
-        // Pop variables off the stack (find better solution -> move RSP manually)
-        // TODO: do this in an assembly file
-        for (int i = 0; i < code.var_count; i++)
+
+        // Pop variables off the stack
+        for (int i = 0; i < code->var_count; i++)
                 asm("pop rax" : : : "rax");
 
         asm("pop rcx");
-
-        munmap(code.func, code.code_size + code.data_size);
 
         return result;
 }

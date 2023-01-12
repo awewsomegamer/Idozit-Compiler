@@ -134,7 +134,7 @@ function: IDENTIFIER == reserved
 // Helpful
 #define FUNCTION(name, func, args) uint64_t (*name)args = func; // FUNCTION(my_func, func, (int, int, int))
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
-#define DEBUG 1
+#define DEBUG 0
 
 /* struct token :
  * The token structure used by the compiler.
@@ -225,7 +225,7 @@ code_block_t compile(context_t ctx);
  * code      : The structure containing the code to run
  * ...       : Variables (double)
  */
-double run(code_block_t code, ...);
+double run(code_block_t *code, ...);
 
 /* tree_to(tree_code_t *tree, const char *language) :
  * Takes the generated tree, tree, and converts it into a given language,
