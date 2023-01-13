@@ -10,6 +10,8 @@
 #include <unistd.h>
 // Custom code generator function pointer
 code_block_t (*code_generator)(tree_code_t *, int) = NULL;
+double (*run_func)(code_block_t *, va_list) = NULL;
+
 code_block_t *last_exec = NULL;
 
 context_t expression(const char *form, int var_count, ...)
@@ -65,6 +67,12 @@ code_block_t compile(context_t context)
 
 double run(code_block_t *code, ...)
 {      
+        va_list args;
+        va_start(args, code);
+
+        if (run_func != NULL)
+                return (*run_func)(code, args);
+
         // Create a new executable buffer if we haven't ran anything or
         // running a different function.
         if (last_exec == NULL || last_exec != code) {
@@ -79,16 +87,14 @@ double run(code_block_t *code, ...)
         }
         
         // Print machine code + data
-        if (DEBUG) {
+        #ifdef DEBUG
                 char* machine_code_string = malloc((code->code_size + code->data_size) * 3);
                 for (int i = 0; i < code->code_size + code->data_size; i++)
                         sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)code->func) + i));
                 message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
                 free(machine_code_string);
-        }
+        #endif
 
-        va_list args;
-        va_start(args, code);
         
         asm("push rcx;    \
              mov rcx, %0;" : : "a"((uintptr_t)code->func + code->code_size) :);
@@ -96,15 +102,12 @@ double run(code_block_t *code, ...)
         // Push variables onto the stack
         for (int i = 0; i < code->var_count; i++) {
                 uint64_t bytes_double;
-                double arg = va_arg(args, double);
+                double arg = arg = va_arg(args, double);
                 memcpy(&bytes_double, &arg, sizeof(uint64_t));
-
                 asm("push %0" : : "a"(bytes_double) :);
         }
 
-
-        double result = ((double (*) (void))code->func)();
-        
+        double result = ((double (*) (void))code->func)();        
 
         // Pop variables off the stack
         for (int i = 0; i < code->var_count; i++)
@@ -138,4 +141,9 @@ void set_code_generator(code_block_t (*func)(tree_code_t *, int))
 void set_message_handler(void (*func)(int, const char *, va_list))
 {
        _set_message_handler(func); 
+}
+
+void set_run_function(double (*func)(code_block_t *, va_list))
+{
+        run_func = func;
 }

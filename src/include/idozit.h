@@ -134,17 +134,18 @@ function: IDENTIFIER == reserved
 // Helpful
 #define FUNCTION(name, func, args) uint64_t (*name)args = func; // FUNCTION(my_func, func, (int, int, int))
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
-#define DEBUG 0
 
 /* struct token :
  * The token structure used by the compiler.
  * 
  * type   : An integer which contains the numerical type of the token
  * value  : A double which contains the numerical value of the token
+ * custom : A pointer to a custom token_t structure
  */
 struct token {
         int type;
         double value;
+        void *custom;
 };
 typedef struct token token_t;
 
@@ -155,6 +156,7 @@ typedef struct token token_t;
  * type         : The type of the current node (+, -, /, *, etc...)
  * parser_mark  : A variable that is used by the parser to denote specific information about this node
  * left & right : Branches to the left and right
+ * custom       : A pointer to a custom tree_code_t structure
  */
 struct tree_code
 {
@@ -165,6 +167,8 @@ struct tree_code
     struct tree_code *left;
     struct tree_code *right;
     struct tree_code *parent;
+
+    void *custom;
 };
 typedef struct tree_code tree_code_t;
 
@@ -172,11 +176,14 @@ typedef struct tree_code tree_code_t;
  * A context for the compiler to compile
  * Contains the head of the tree structure and the number
  * of variables it has.
+ * 
+ * custom : A pointer to the custom context data structure
  */
 struct context
 {
     tree_code_t *head;
     int var_count;
+    void *custom;
 };
 typedef struct context context_t;
 
@@ -190,6 +197,7 @@ typedef struct context context_t;
  * code_size  : Size in bytes of the code, func
  * data_size  : Size in bytes of the data, data
  * var_count  : Number of variables
+ * custom     : A pointer to a custom code_block_t data structure
  */
 struct code_block
 {
@@ -199,6 +207,7 @@ struct code_block
     size_t code_size;
     size_t data_size;
     int var_count;
+    void *custom;
 }__attribute__((packed));
 typedef struct code_block code_block_t;
 
@@ -266,8 +275,14 @@ void set_code_generator(code_block_t (*)(tree_code_t *, int));
 
 /* void set_message_handler(void*) :
  * This function will set the message handler to the given function.
- * Setting it to NULL resets it to the default message handler
+ * Setting it to NULL resets it to the default message handler.
  */
 void set_message_handler(void (*)(int, const char *, va_list));
+
+/* void set_run_function(double (*)(code_block_t *, va_list)) :
+ * This function will set the run function to the given run function.
+ * Setting it to NULL resets it to the default run function.
+ */
+void set_run_function(double (*)(code_block_t *, va_list));
 
 #endif
