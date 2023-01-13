@@ -31,7 +31,9 @@ void render() {
 	SDL_Delay(16);
 }
 
-/* Interesting patterns (value in parentheses is t_i):
+/* Photosensitive epilepsy warning
+ *
+ * Interesting patterns (value in parentheses is t_i):
  * Using: VRAM[i][j] += value;
  * INTEGRAL 1 x (x + t) * 100 (0.1)
  * INTEGRAL 1 x (x + t * y) (0.1)
@@ -49,8 +51,19 @@ void render() {
  * 
  * Using: VVRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
  * x * y / t (1, 27.2)
- * x / y / t (0.1 -> 0.001) 
+ * x / y / t (0.1 -> 0.001)
+ * x / y / t / PI (1) 
+ * x * t - y (0.001)
+ * x * t - y * PI (0.001)
+ * x * t - y / PI (0.001)
+ * x * t + y / PI (0.001)
+ * INTEGRAL 1 t (x * t - y * PI) (0.001, -0.001)
+ * INTEGRAL 1 t (x * t * y * PI) (0.001, -0.001)
+ * INTEGRAL 1 x (x * y / t / PI / E) (0.00000000001)
+ * y - x / t (27.2)
  * 
+ * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
+ * x / y / t / PI
  */
 void* vram_update(void* args) {
         while (running) {
