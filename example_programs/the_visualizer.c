@@ -51,7 +51,7 @@ void render() {
  * 
  * Using: VVRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
  * x * y / t (1, 27.2)
- * x / y / t (0.1 -> 0.001)
+ * x / y / t and x * t + y^2 and x + y / t ^ t and x - y  / t ^ t (0.1 -> 0.001) - Entropy
  * x / y / t / PI (1) 
  * x * t - y (0.001)
  * x * t - y * PI (0.001)
@@ -61,6 +61,10 @@ void render() {
  * INTEGRAL 1 t (x * t * y * PI) (0.001, -0.001)
  * INTEGRAL 1 x (x * y / t / PI / E) (0.00000000001)
  * y - x / t (27.2)
+ * x ^ t / y and x ^ t - y and x ^ t + y (0.0001) - Super cool polygon stuff
+ * x ^ t * y (27.2) - Grid
+ * x + y / t ^ 679 (1)
+ * 
  * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI

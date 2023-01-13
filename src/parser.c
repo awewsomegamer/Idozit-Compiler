@@ -443,7 +443,6 @@ tree_code_t *term()
                 message(MESSAGE_DEBUG, "FUNCTION\n");
 
                 int func = last_token->value;
-
                 // Get degree of the function (apply once, twice, so on)
                 int degree = 1;
                 if (accept(T_INT))
@@ -458,21 +457,16 @@ tree_code_t *term()
                 ret = addition();
                 expect(T_RPAREN);
                 
-                // // Naiive approach
-                // if (degree > 1 && func == T_FUNC_INTEGRAL) {
-                //         message(MESSAGE_ERROR, "Using funcion INTEGRAL with a degree > 1 causes segfaults, not applying function");
-                //         return ret;
-                // }
-
+                // Naiive approach
                 for (int i = 0; i < degree; i++) {
                         apply_function(func, degree, respect_to, ret); 
                         reset_parser_marks(ret);
                 }
 
-
                 // Check for exponent
-                if (accept(T_EXPONENT)) return exponent(ret);
-
+                if (accept(T_EXPONENT))
+                        return exponent(ret);
+        
                 return ret;
         }
 }

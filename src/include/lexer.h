@@ -42,12 +42,14 @@ static const char *TOKEN_NAMES[] = {
 enum {
         T_FUNC_INTEGRAL,
         T_FUNC_DERIVATIVE,
+        T_FUNC_SQRT,
         T_FUNC_MAX
 };
 
 static const char *T_FUNC_NAMES[] = {
         [T_FUNC_INTEGRAL] = "INTEGRAL",
-        [T_FUNC_DERIVATIVE] = "DERIVATIVE"
+        [T_FUNC_DERIVATIVE] = "DERIVATIVE",
+        [T_FUNC_SQRT] = "SQRT",
 };
 
 struct symbol {
