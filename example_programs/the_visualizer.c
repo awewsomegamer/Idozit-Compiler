@@ -32,6 +32,7 @@ void render() {
 }
 
 /* Interesting patterns (value in parentheses is t_i):
+ * Using: VRAM[i][j] += value;
  * INTEGRAL 1 x (x + t) * 100 (0.1)
  * INTEGRAL 1 x (x + t * y) (0.1)
  * INTEGRAL 1 x (x + t * y) (0.0001)
@@ -45,12 +46,18 @@ void render() {
  * x * t / y (0.1, 1)
  *       
  * x * t + y^2 (0.1, 1, 2)
+ * 
+ * Using: VVRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
+ * x * y / t (1, 27.2)
+ * x / y / t (0.1 -> 0.001) 
+ * 
  */
 void* vram_update(void* args) {
         while (running) {
                 for (double i = 0; i < 480; i++) {
                         for (double j = 0; j < 640; j++) {
-                                VRAM[(int)i][(int)j] += run(&code, j, i, t);
+                                double value = run(&code, j, i, t);
+                                VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
                         }
                 }
 
@@ -72,7 +79,6 @@ int main(int argc, char** argv) {
 
         pthread_t thread;
         pthread_create(&thread, NULL, vram_update, NULL);
-        
         while (running) {
                 update();
                 render();
