@@ -64,7 +64,9 @@ void render() {
  * x ^ t / y and x ^ t - y and x ^ t + y (0.0001) - Super cool polygon stuff
  * x ^ t * y (27.2) - Grid
  * x + y / t ^ 679 (1)
- * 
+ * x + y + t (0.01)
+ * x + 0 - y + t (0.01)
+ * 0 - x + y + t (0.01)
  * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI
