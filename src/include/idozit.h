@@ -5,6 +5,7 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 /* Grammar
 NUMBER = 0123456789
@@ -210,6 +211,12 @@ struct code_block
     void *custom;
 }__attribute__((packed));
 typedef struct code_block code_block_t;
+
+static struct {
+    uint8_t caching : 1;        // Whether or not the program should cache
+    uint16_t available_caches;  // How many programs the cacher can allocate at a time
+    time_t cache_cut_off;       // The time after which a cache should be discarded
+} idozit_word;
 
 /* context_t expression(const char *form, int var_count, ...) :
  * Sets up the expression and the variables for lexer and parser

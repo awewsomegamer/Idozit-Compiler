@@ -5,17 +5,27 @@
 #include <messages.h>
 #include <generator.h>
 
-#include <string.h>
-#include <sys/mman.h>
+#include <cacher.h>
 #include <unistd.h>
+#include <sys/mman.h>
+#include <pthread.h>
+
 // Custom code generator function pointer
 code_block_t (*code_generator)(tree_code_t *, int) = NULL;
 double (*run_func)(code_block_t *, va_list) = NULL;
 
 code_block_t *last_exec = NULL;
 
+pthread_mutex_t expression_mutex;
+pthread_mutex_t compile_mutex;
+
+// This one is debatable
+pthread_mutex_t run_mutex;
+
 context_t expression(const char *form, int var_count, ...)
 {
+        pthread_mutex_lock(&expression_mutex);
+
         // Setup inputs
         expression_string = form;
         variable_count = var_count;
@@ -46,11 +56,15 @@ context_t expression(const char *form, int var_count, ...)
                 free(variables_list[i]);
         free(variables_list);
 
+        pthread_mutex_unlock(&expression_mutex);
+
         return *ctx;
 }
 
 code_block_t compile(context_t context)
 {
+        pthread_mutex_lock(&compile_mutex);
+
         code_block_t ret;
 
         // Generate code, use custom generator if it is not NULL otherwise use default one
@@ -62,28 +76,35 @@ code_block_t compile(context_t context)
 
         ret.var_count = context.var_count;
 
+        pthread_mutex_unlock(&compile_mutex);
+
         return ret;
 }
 
 double run(code_block_t *code, ...)
 {      
+        pthread_mutex_lock(&run_mutex);
+
         va_list args;
         va_start(args, code);
 
         if (run_func != NULL)
                 return (*run_func)(code, args);
 
+        void *func = NULL;
         // Create a new executable buffer if we haven't ran anything or
         // running a different function.
-        if (last_exec == NULL || last_exec != code) {
+        if ((last_exec == NULL || last_exec != code) && !idozit_word.caching) {
                 if (last_exec != NULL)
                         munmap(0, last_exec->code_size + last_exec->data_size);
 
-                code->func = mmap(0, code->code_size + code->data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-                memcpy(code->func, code->code, code->code_size);
-                memcpy(code->func + code->code_size, code->data, code->data_size);
+                func = mmap(0, code->code_size + code->data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                memcpy(func, code->code, code->code_size);
+                memcpy(func + code->code_size, code->data, code->data_size);
 
                 last_exec = code;
+        } else if (idozit_word.caching) {
+                func = cache_code_block(code);
         }
         
         // Print machine code + data
@@ -107,13 +128,15 @@ double run(code_block_t *code, ...)
                 asm("push %0" : : "a"(bytes_double) :);
         }
 
-        double result = ((double (*) (void))code->func)();        
+        double result = ((double (*) (void))func)();        
 
         // Pop variables off the stack
         for (int i = 0; i < code->var_count; i++)
                 asm("pop rax" : : : "rax");
 
         asm("pop rcx");
+
+        pthread_mutex_unlock(&run_mutex);
 
         return result;
 }
