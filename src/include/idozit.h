@@ -132,6 +132,8 @@ function: IDENTIFIER == reserved
 // Compiler Flags (Set: 1, Clear: 0)
 #define NAME_FLAG_ERRPASS 1 // When clear, compiler will break when an error is encountered (Default: set)
 
+#define DEBUG
+
 // Helpful
 #define FUNCTION(name, func, args) uint64_t (*name)args = func; // FUNCTION(my_func, func, (int, int, int))
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
@@ -212,11 +214,12 @@ struct code_block
 }__attribute__((packed));
 typedef struct code_block code_block_t;
 
-static struct {
+struct idozit_word_struct {
     uint8_t caching : 1;        // Whether or not the program should cache
     uint16_t available_caches;  // How many programs the cacher can allocate at a time
     time_t cache_cut_off;       // The time after which a cache should be discarded
-} idozit_word;
+};
+extern struct idozit_word_struct idozit_word;
 
 /* context_t expression(const char *form, int var_count, ...) :
  * Sets up the expression and the variables for lexer and parser

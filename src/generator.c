@@ -442,6 +442,11 @@ code_block_t default_x86_64_generator(tree_code_t *tree, int var_count)
         position = 0;
         data_position = 0;
 
+        spill = 0;
+        for (int i = 0; i < 16; i++)
+                xmm_reg[i] = 0;
+
+
         // PUSH RBP
         append_byte(0x55);
 
@@ -449,6 +454,18 @@ code_block_t default_x86_64_generator(tree_code_t *tree, int var_count)
         append_byte(0x48);
         append_byte(0x89);
         append_byte(0xE5);
+
+        // // XOR RAX, RAX
+        // append_byte(0x48);
+        // append_byte(0x31);
+        // append_byte(0xC0);
+
+        // // CVTSI2SD XMM0, RAX
+        // append_byte(0xF2);
+        // append_byte(0x48);
+        // append_byte(0x0F);
+        // append_byte(0x2A);
+        // append_byte(0xC0);
 
         // Convert tree to x86-64 machine code        
         evaluate(tree);

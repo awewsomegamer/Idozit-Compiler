@@ -8,12 +8,13 @@ void _set_message_handler(void (*handler)(int, const char*, va_list)) {
 }
 
 void message(int level, const char* message, ...) {
-        #ifdef DEBUG
         va_list args;
         va_start(args, level);
 
+        #ifndef DEBUG
         if (level == MESSAGE_DEBUG)
                 return;
+        #endif
 
         if (message_handler_function != NULL) {
                 (*message_handler_function)(level, message, args);
@@ -25,5 +26,4 @@ void message(int level, const char* message, ...) {
 
         if (level == MESSAGE_FATAL)
                 exit(1);
-        #endif
 }

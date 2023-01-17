@@ -34,6 +34,17 @@ void *cache_code_block(code_block_t *code) {
                 blocks_size = idozit_word.available_caches;
         }
 
+        // Simple bubble sort (replace later)
+        for (int i = 0; i < blocks_ptr; i++) {
+                for (int j = 0; j < blocks_ptr - 1; j++) {
+                        if (blocks[j + 1].where > blocks[j].where) {
+                                struct cache_block tmp = blocks[j];
+                                blocks[j] = blocks[j + 1];
+                                blocks[j + 1] = tmp;
+                        }
+                }
+        }
+
         // Free old caches
         for (int i = 0; i < blocks_ptr; i++)
                 if (blocks[i].last_used >= idozit_word.cache_cut_off)
@@ -46,8 +57,7 @@ void *cache_code_block(code_block_t *code) {
 
         // Check if there is a free space available to use
         for (int i = 0; i < blocks_ptr; i++)
-                if (blocks[i].size >= code->code_size + code->data_size 
-                    && (blocks[i].properties & 1) == 0) {
+                if ((blocks[i].size >= code->code_size + code->data_size && (blocks[i].properties & 1) == 0)) {
                         // Use this block
                         memcpy(blocks[i].where, code->code, code->code_size);
                         memcpy(blocks[i].where + code->code_size, code->data, code->data_size);
@@ -58,9 +68,30 @@ void *cache_code_block(code_block_t *code) {
                     }
 
 
+        // If we are maxed out check for oldest / least used block
+        if (blocks_ptr + 1 == blocks_size) {
+                int oldest = 0;
+                time_t oldest_time = blocks[0].last_used;
+                for (int i = 0; i < blocks_size; i++) {
+                        if (blocks[i].last_used > oldest_time) {
+                                oldest_time = blocks[i].last_used;
+                                oldest = i;
+                        }
+                }
+                
+                memcpy(blocks[oldest].where, code->code, code->code_size);
+                memcpy(blocks[oldest].where + code->code_size, code->data, code->data_size);
+                
+                blocks[oldest].last_used = time(NULL);
+
+                return blocks[oldest].where;
+        }
+        
         // Allocate a new cache block for the code
         blocks[blocks_ptr].where = mmap((void *)next_address, code->code_size + code->data_size,
                                         PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+
+        next_address += code->code_size + code->data_size;
 
         memcpy(blocks[blocks_ptr].where, code->code, code->code_size);
         memcpy(blocks[blocks_ptr].where + code->code_size, code->data, code->data_size);

@@ -22,6 +22,9 @@ pthread_mutex_t compile_mutex;
 // This one is debatable
 pthread_mutex_t run_mutex;
 
+struct idozit_word_struct idozit_word;
+
+
 context_t expression(const char *form, int var_count, ...)
 {
         pthread_mutex_lock(&expression_mutex);
@@ -83,11 +86,10 @@ code_block_t compile(context_t context)
 
 double run(code_block_t *code, ...)
 {      
-        pthread_mutex_lock(&run_mutex);
+        // pthread_mutex_lock(&run_mutex);
 
         va_list args;
         va_start(args, code);
-
         if (run_func != NULL)
                 return (*run_func)(code, args);
 
@@ -111,7 +113,7 @@ double run(code_block_t *code, ...)
         #ifdef DEBUG
                 char* machine_code_string = malloc((code->code_size + code->data_size) * 3);
                 for (int i = 0; i < code->code_size + code->data_size; i++)
-                        sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)code->func) + i));
+                        sprintf(machine_code_string + i * 3, "%02X ", *(((uint8_t *)func) + i));
                 message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
                 free(machine_code_string);
         #endif
@@ -136,7 +138,7 @@ double run(code_block_t *code, ...)
 
         asm("pop rcx");
 
-        pthread_mutex_unlock(&run_mutex);
+        // pthread_mutex_unlock(&run_mutex);
 
         return result;
 }
