@@ -67,6 +67,8 @@ void render() {
  * x + y + t (0.01)
  * x + 0 - y + t (0.01)
  * 0 - x + y + t (0.01)
+ * x / y - t / 2 (1, 5) - Entropy Wave
+ * PI - x / y - t / 2 (0.1) - Big rotating rotor
  * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI

@@ -293,4 +293,10 @@ void set_message_handler(void (*)(int, const char *, va_list));
  */
 void set_run_function(double (*)(code_block_t *, va_list));
 
+/* void set_cacher_function(void * (*)(code_block_t *)) :
+ * This function will set the cacher function to the given cacher function.
+ * Setting it to NULL resets it to the default cacher function.
+ */
+void set_cacher_function(void * (*)(code_block_t *));
+
 #endif

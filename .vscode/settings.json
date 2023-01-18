@@ -12,6 +12,9 @@
                 "sdl.h": "c",
                 "idozit.h": "c",
                 "stdint.h": "c",
-                "time.h": "c"
+                "time.h": "c",
+                "cacher.h": "c",
+                "time_t.h": "c",
+                "types.h": "c"
         }
 }

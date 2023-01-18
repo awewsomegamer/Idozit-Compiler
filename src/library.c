@@ -10,8 +10,10 @@
 #include <sys/mman.h>
 #include <pthread.h>
 
-// Custom code generator function pointer
+// Custom function pointers
 code_block_t (*code_generator)(tree_code_t *, int) = NULL;
+void * (*cacher_func)(code_block_t *) = NULL;
+
 double (*run_func)(code_block_t *, va_list) = NULL;
 
 code_block_t *last_exec = NULL;
@@ -106,7 +108,7 @@ double run(code_block_t *code, ...)
 
                 last_exec = code;
         } else if (idozit_word.caching) {
-                func = cache_code_block(code);
+                func = (cacher_func == NULL ? cache_code_block(code) : (*cacher_func)(code));
         }
         
         // Print machine code + data
@@ -171,4 +173,9 @@ void set_message_handler(void (*func)(int, const char *, va_list))
 void set_run_function(double (*func)(code_block_t *, va_list))
 {
         run_func = func;
+}
+
+void set_cacher_function(void * (*func)(code_block_t *))
+{
+        cacher_func = func;
 }
