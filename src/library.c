@@ -93,16 +93,16 @@ double run(code_block_t *code, ...)
         if (run_func != NULL)
                 return (*run_func)(code, args);
 
-        void *func = NULL;
+        void *func = code->func;
         // Create a new executable buffer if we haven't ran anything or
         // running a different function.
         if ((last_exec == NULL || last_exec != code) && !idozit_word.caching) {
                 if (last_exec != NULL)
                         munmap(0, last_exec->code_size + last_exec->data_size);
 
-                func = mmap(0, code->code_size + code->data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-                memcpy(func, code->code, code->code_size);
-                memcpy(func + code->code_size, code->data, code->data_size);
+                func = code->func = mmap(0, code->code_size + code->data_size, PROT_READ | PROT_WRITE | PROT_EXEC,MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+                memcpy(code->func, code->code, code->code_size);
+                memcpy(code->func + code->code_size, code->data, code->data_size);
 
                 last_exec = code;
         } else if (idozit_word.caching) {

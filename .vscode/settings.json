@@ -10,6 +10,8 @@
                 "semantics.h": "c",
                 "lexer.h": "c",
                 "sdl.h": "c",
-                "idozit.h": "c"
+                "idozit.h": "c",
+                "stdint.h": "c",
+                "time.h": "c"
         }
 }

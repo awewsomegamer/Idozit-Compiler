@@ -132,8 +132,6 @@ function: IDENTIFIER == reserved
 // Compiler Flags (Set: 1, Clear: 0)
 #define NAME_FLAG_ERRPASS 1 // When clear, compiler will break when an error is encountered (Default: set)
 
-#define DEBUG
-
 // Helpful
 #define FUNCTION(name, func, args) uint64_t (*name)args = func; // FUNCTION(my_func, func, (int, int, int))
 #define CALL(name) (*name)                                      // CALL(my_func)(5,112,4)
