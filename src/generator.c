@@ -139,8 +139,6 @@ double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
  */
 int evaluate(tree_code_t *tree)
 {       
-        printf("%s\n", TOKEN_NAMES[tree->type]);
-        
         uint8_t flags = 0;
         double solution = numerical_evaluation(tree, &flags);
 
@@ -166,14 +164,12 @@ int evaluate(tree_code_t *tree)
 
         // Generate to the left
         if (tree->left != NULL) {
-                printf("Left: ");
                 left = evaluate(tree->left);
                 vleft = numerical_evaluation(tree->left, &left_info);
         }
 
         // Generate to the right
         if (tree->right != NULL && tree->type != T_EXPONENT){
-                printf("Right: ");
                 right = evaluate(tree->right);
                 vright = numerical_evaluation(tree->right, &right_info);
         }
