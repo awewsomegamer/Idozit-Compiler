@@ -49,8 +49,8 @@ void *miss(code_block_t *code, int *counter)
 }
 
 void *cache_code_block(code_block_t *code) {
-        message(MESSAGE_DEBUG, "Number of blocks: %d\nCurrent index: %d\n", blocks_size, blocks_ptr);
-
+        message(MESSAGE_DEBUG, "Number of blocks: %d\n", blocks_size);
+        message(MESSAGE_DEBUG, "Current index: %d\n", blocks_ptr);
         // Check if code block is already cached
         for (int i = 0; i < blocks_ptr; i++)
                 if (blocks[i].code == code) {

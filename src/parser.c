@@ -177,12 +177,10 @@ uint8_t tree_homogenous(tree_code_t *tree, uint64_t mark)
  */
 void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, tree_code_t *parent)
 {
-        int homogenous = 0;
+        int homogenous = tree_homogenous(tree, homogenous_mark);
         
         // Check if requirements for base tree are met
         if (tree != NULL && tree->parser_mark != mark) {
-                homogenous = tree_homogenous(tree, homogenous_mark);
-                
                 // Parent the tree
                 tree_code_t *tmp = create_node(tree->type, tree->value, tree->parser_mark, tree->left, tree->right);
                 
@@ -199,6 +197,8 @@ void parent_branch(tree_code_t *tree, uint64_t mark, uint64_t homogenous_mark, t
                         tree->left = create_node(parent->left->type, parent->left->value, parent->left->parser_mark,
                                                   parent->left->left, parent->left->right);
                 }
+
+                homogenous = 1;
         }
 
         // Recursively go down if the above if statement was not executed
@@ -363,23 +363,23 @@ void apply_function(int function, int degree, int respect_to, tree_code_t *tree)
                                 goto REG_GEN;
                         } else {
                                 REG_GEN:
-                                var->type = T_DIV;
-                                var->left = create_node(T_EXPONENT, 0, 3, create_empty(T_VAR, var->value), create_empty(T_INT, 2));
-                                var->left->parent = var;
                                 
-                                var->left->left->parent = var->left;
-                                var->left->right->parent = var->left;
-                                
-                                var->left->left->parser_mark = 3;
-                                var->left->right->parser_mark = 3;
-                                var->left->parser_mark = 3;
-                                
+                                var->type = T_EXPONENT;
+                                var->left = create_empty(T_VAR, var->value);
                                 var->right = create_empty(T_INT, 2);
-                                var->right->parent = var;
                                 
-                                var->right->parent = parent;
+                                var->left->parser_mark = 3;
                                 var->right->parser_mark = 3;
                                 var->parser_mark = 3;
+                                
+                                var->left->parent = var;
+                                var->right->parent = var;
+
+                                if (parent != NULL && (parent->type == T_DIV || parent->type == T_MUL)) {
+                                        parent->parser_mark = 3;
+                                        parent->left->parser_mark = 3;
+                                        parent->right->parser_mark = 3;
+                                }
                         }
 
                         while (parent != NULL) {

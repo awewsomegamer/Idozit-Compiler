@@ -139,6 +139,8 @@ double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
  */
 int evaluate(tree_code_t *tree)
 {       
+        printf("%s\n", TOKEN_NAMES[tree->type]);
+        
         uint8_t flags = 0;
         double solution = numerical_evaluation(tree, &flags);
 
@@ -164,12 +166,14 @@ int evaluate(tree_code_t *tree)
 
         // Generate to the left
         if (tree->left != NULL) {
+                printf("Left: ");
                 left = evaluate(tree->left);
                 vleft = numerical_evaluation(tree->left, &left_info);
         }
 
         // Generate to the right
         if (tree->right != NULL && tree->type != T_EXPONENT){
+                printf("Right: ");
                 right = evaluate(tree->right);
                 vright = numerical_evaluation(tree->right, &right_info);
         }
@@ -330,13 +334,12 @@ int evaluate(tree_code_t *tree)
                         if (left >= 8) {
                                 append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
                         }
-
+                        
                         append_byte(0x0F);
                         append_byte(0x10);
                         append_byte(0xC0 + left + ((reg % 8) * 8));  
                 }
 
-                // TODO: More than 4 repetitions should get a loop
                 if (repetitions > 4) {
                         // MOV R8, repetitions
                         append_byte(0x49);
@@ -370,9 +373,11 @@ int evaluate(tree_code_t *tree)
                         append_byte(0xFF);
                         append_byte(0xFF);
 
+                        free_reg(reg);
+
                         return left;
                 }
-
+                
                 for (int i = 0; i < repetitions; i++) {
                         append_byte(0xF2);
 
