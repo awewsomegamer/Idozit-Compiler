@@ -31,3 +31,11 @@ Further documentation about how to **use** the library is available at <a href="
 
 ## Example programs
 For information about the example programs, visit <a href="EXAMPLES.md">EXAMPLES.md</a>
+
+## Contribution
+You code should consider the following:
+* `Readability` - Is it easy to read?
+* `Comments` - What is the developer thinking here? What do these lines mean?
+* `Modification` - Is it easy to modify?
+
+You must also provide a document following the lines of <a href="DEFAULTS.md>DEFAULTS.md</a>.
