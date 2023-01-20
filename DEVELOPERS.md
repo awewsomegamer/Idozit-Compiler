@@ -27,6 +27,6 @@ This document outlines the specific parts of the compiler, the default files, an
 * void *`custom` - A pointer to a custom structure (in case that the default `token_t` structure is not satisfactory)
 
 `idozit_word`:<br>
-This is a very important structure that establishes general hooks between the developer and the user. Its structure is outlined in <a href="USERS.md#Idozit_Word">USERS.md</a>
+This is a very important structure that establishes general hooks between the developer and the user. Its structure is outlined in <a href="USERS.md#idozit-word">USERS.md</a>
 
 ## Functions
