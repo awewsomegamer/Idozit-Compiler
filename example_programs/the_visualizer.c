@@ -70,6 +70,10 @@ void render() {
  * x / y - t / 2 (1, 5) - Entropy Wave
  * PI - x / y - t / 2 (0.1) - Big rotating rotor
  * 
+ * t - x / t (0.1 -> 0.001) - Stripey
+ * x + 4.72 - 642 (27.1 -> 0.1) - Skrunk
+ * 43 / 270 * 6 - y + 873 * t (27.1) - Pastel
+ * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI
  */
