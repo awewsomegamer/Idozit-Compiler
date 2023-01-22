@@ -8,27 +8,29 @@
 #include <time.h>
 
 /* Grammar
-NUMBER = 0123456789
+NUMBER = 0123456789 | mathematical_symbol
 IDENTIFIER = string of characters that do not include numbers
 
-program: addition
+program: addition T_EOF
 
-addition: multiplication + multiplication
-        | multiplication - multiplication
+addition: multiplication '+' multiplication
+        | multiplication '-' multiplication
+        ;
 
-multiplication: term * term
-              | term / term
+multiplication: term '*' term
+              | term '/' term
+              ;
 
 term: ( expression )
     | NUMBER
     | variable
     | function
+    ;
 
 variable: IDENTIFIER != reserved
 
 function: IDENTIFIER == reserved
         & IDENTIFIER NUMBER variable ( addition )
-
 */
 
 // Mathematical Constants

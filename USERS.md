@@ -85,7 +85,7 @@ The arrow denotes that the left side must be compatible with the right side:
 * `Code Generator Function` -> `Run Function`
 
 ### Idozit Word
-The `idozit_word` variable is globally available, and it outlines some general configuration. As of writing contains the following:
+The `idozit_word` variable is globally available, and it outlines some general configuration. As of writing it contains the following:
 * `caching` - Should programs be cached when run? (1: yes, 0: no)
 * `available_caches` - If caching is enabled, how many programs can be cached at a time?
 * `cache_cut_off` - After what time (in microseconds) should a cache be free'd?

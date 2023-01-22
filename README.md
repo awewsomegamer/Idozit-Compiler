@@ -1,7 +1,7 @@
 # Idozit
 
 ## What
-This is a JIT compiler designed to be used within projects. Originally the aspects of the compiler (lexer, parser, semantic analyzer, code generator, and message handler) were designed for compiling mathematical expressions, but later revised to adapt to open-source standards. This revision made it possible for all aspects of the compiler to be switched out, and the compiler would work as long as it has been given the correct aspects (i.e. The original lexer, parser, and semantic analyzer, but differnt code generator, message handler, and runner function). 
+This is a JIT compiler designed to be used within projects. Originally the aspects of the compiler (lexer, parser, semantic analyzer, code generator, and message handler) were designed for compiling mathematical expressions, but later revised to adapt to open-source standards. This revision made it possible for all aspects of the compiler to be switched out, and the compiler would work as long as it has been given the correct aspects (i.e. The original lexer, parser, and semantic analyzer, but differnt code generator, message handler, and runner function).
 
 ## Terminology
 * `Lexer` - This aspect of the compiler is responsible for reading in the given string stream (program) and converting them into structures which the parser, semantic analyzer, and code generator can recognize.
@@ -38,4 +38,4 @@ You code should consider the following:
 * `Comments` - What is the developer thinking here? What do these lines mean?
 * `Modification` - Is it easy to modify?
 
-You must also provide a document following the lines of <a href="DEFAULTS.md>DEFAULTS.md</a>.
+You must also provide a document following the lines of <a href="DEFAULTS.md>DEFAULTS.md</a>, to explain how your aspect(s) work(s), and what functions are provided.
