@@ -170,7 +170,7 @@ int evaluate(tree_code_t *tree)
         }
 
         // Generate to the right
-        if (tree->right != NULL && tree->type != T_EXPONENT){
+        if (tree->right != NULL){
                 right = evaluate(tree->right);
                 vright = numerical_evaluation(tree->right, &right_info);
         }
@@ -203,7 +203,7 @@ int evaluate(tree_code_t *tree)
                 append_byte(0x0F);
                 append_byte(0x2A);
                 append_byte(0xC0 + ((reg % 8) * 8));
-
+                
                 return reg;
         }
 
@@ -319,76 +319,82 @@ int evaluate(tree_code_t *tree)
                 return left;
 
         case T_EXPONENT:
-                uint8_t flags = 0;
-                int repetitions = numerical_evaluation(tree->right, &flags) - 1;
-                int reg = 0;
+                // uint8_t flags = 0;
+                // int repetitions = numerical_evaluation(tree->right, &flags) - 1;
+                int reg = allocate_reg();
 
-                if (repetitions >= 2) {
-                        reg = allocate_reg();
-
-                        append_byte(0xF2);
-
-                        if (left >= 8) {
-                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
-                        }
-                        
-                        append_byte(0x0F);
-                        append_byte(0x10);
-                        append_byte(0xC0 + left + ((reg % 8) * 8));  
-                }
-
-                if (repetitions > 4) {
-                        // MOV R8, repetitions
-                        append_byte(0x49);
-                        append_byte(0xC7);
-                        append_byte(0xC0);
-                        for (int i = 0; i < 4; i++) {
-                                append_byte(((repetitions >> (8 * i)) & 0xFF));
-                        }
-
-                        // MULSD XMMR, REG
-                        append_byte(0xF2); // 8
-
-                        if (left >= 8 || right >= 8 || reg >= 8) {
-                                append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4)); // 7?
-                        }
-
-                        append_byte(0x0F); // 6
-                        append_byte(0x59); // 5
-                        append_byte(0xC0 + reg + ((left % 8) * 8)); // 4
-
-                        // SUB R8, 1
-                        append_byte(0x49); // 3
-                        append_byte(0xFF); // 2
-                        append_byte(0xC8); // 1
-
-                        // JNZ 
-                        append_byte(0x0F); // 0
-                        append_byte(0x85);
-                        append_byte(0xFF - 7 - (right >= 8 || reg >= 8 || left >= 8) - 5);
-                        append_byte(0xFF);
-                        append_byte(0xFF);
-                        append_byte(0xFF);
-
-                        free_reg(reg);
-
-                        return left;
-                }
+                // Subtract one from right to get the number of repetitions
                 
-                for (int i = 0; i < repetitions; i++) {
-                        append_byte(0xF2);
+                // MOV RAX, 0x3F800000 (floating point +1)
+                append_byte(0x48);
+                append_byte(0xC7);
+                append_byte(0xC0);
+                append_byte(0x00);
+                append_byte(0x00);
+                append_byte(0x80); // 80
+                append_byte(0x3F); // 3F
 
-                        if (left >= 8 || right >= 8 || reg >= 8) {
-                                append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4));
-                        }
+                // MOVQ REG, RAX
+                append_byte(0x66);
+                append_byte(0x48 + (reg > 7) * 4);
+                append_byte(0x0F);
+                append_byte(0x6E);
+                append_byte(0xC0); // + (reg % 8) * 8
 
-                        append_byte(0x0F);
-                        append_byte(0x59);
-                        append_byte(0xC0 + ((repetitions >= 2) ? (reg + ((left % 8) * 8)) : (left + ((left % 8) * 8))));
-                }
+                // append_byte(0xF2);
+                // append_byte(0x48 + ((reg >= 8) * 4));
+                // append_byte(0x0F);
+                // append_byte(0x2A);
+                // append_byte(0xC0); // + ((reg % 8) * 8)
+
+                // // SUBSD right, reg
+                // append_byte(0xF2);
                 
-                if (repetitions >= 2)
-                        free_reg(reg);
+                // if (left >= 8) {
+                //         append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
+                // }
+
+                // append_byte(0x0F);
+                // append_byte(0x5C);
+                // append_byte(0xC0 + reg + ((right % 8) * 8));  
+
+                // // CVTSD2SI RAX, right
+                // append_byte(0xF2);
+                // append_byte(0x48 + (right > 7))
+                // append_byte(0x0F);
+                // append_byte(0x2D);
+                // append_byte(0xC0 + (right % 8));
+
+                // free_reg(reg);
+                
+
+                // // Do the loop
+
+                //  // MULSD XMMR, REG
+                // append_byte(0xF2); // 8
+
+                // if (left >= 8 || right >= 8 || reg >= 8) {
+                //         append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4)); // 7?
+                // }
+
+                // append_byte(0x0F); // 6
+                // append_byte(0x59); // 5
+                // append_byte(0xC0 + reg + ((left % 8) * 8)); // 4
+
+                // // DEC R8
+                // append_byte(0x49); // 3
+                // append_byte(0xFF); // 2
+                // append_byte(0xC8); // 1
+
+                // // JNZ 
+                // append_byte(0x0F); // 0
+                // append_byte(0x85);
+                // append_byte(0xFF - 7 - (right >= 8 || reg >= 8 || left >= 8) - 5);
+                // append_byte(0xFF);
+                // append_byte(0xFF);
+                // append_byte(0xFF);
+
+                // free_reg(reg);
 
                 return left;
         }
