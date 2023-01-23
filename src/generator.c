@@ -87,7 +87,8 @@ void free_reg(int reg)
 // Bit 5:
 // Bit 6:
 // Bit 7:
-double numerical_evaluation(tree_code_t* tree, uint8_t* flags) {
+double numerical_evaluation(tree_code_t* tree, uint8_t* flags)
+{
         double left = 0, right = 0;
         if (tree->left != NULL) left = numerical_evaluation(tree->left, flags);
         if (tree->right != NULL) right = numerical_evaluation(tree->right, flags);

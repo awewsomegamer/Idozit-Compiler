@@ -55,6 +55,12 @@ function: IDENTIFIER == reserved
         & IDENTIFIER NUMBER variable ( addition )
 ```
 
+Functions follow the following format:
+* `Function name` ( IDENTIFIER ) - The name function call
+* `Degree` ( NUMBER ) - How many times the function is applied to the `statement`
+* `Respected variable` ( variable ) - The variable which is respected during the application of the function (`INTEGRAL 1 x ( y )` = `x*y`)
+* `Statement` ( ( addition ) ) - The statement the function is applied to
+
 The parser provides two functions to call:
 * tree_code_t *`build_tree`() - Returns the head of the built parse tree
 * void `_set_parser_function`(tree_code_t * (*)()) - This function sets the function pointer of the parser function

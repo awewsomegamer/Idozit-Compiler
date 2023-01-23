@@ -26,7 +26,6 @@ pthread_mutex_t run_mutex;
 
 struct idozit_word_struct idozit_word;
 
-
 context_t expression(const char *form, int var_count, ...)
 {
         pthread_mutex_lock(&expression_mutex);

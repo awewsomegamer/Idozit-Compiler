@@ -27,8 +27,9 @@ tree_code_t *create_node(int type, double value, uint64_t parser_mark, tree_code
 
 #define create_empty(type, value) create_node(type, value, 0, NULL, NULL)
 
-// Recursively free tree
-void free_tree(tree_code_t* tree) {
+// Recursively free the given tree and itself
+void free_tree(tree_code_t* tree)
+{
         if (tree->left != NULL) free_tree(tree->left);
         if (tree->right != NULL) free_tree(tree->right);
 

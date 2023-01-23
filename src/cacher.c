@@ -5,7 +5,8 @@
 #include <sys/mman.h>
 #include <messages.h>
 
-struct cache_block {
+struct cache_block
+{
         size_t size;
         void *where;
         uint8_t properties;
@@ -48,7 +49,8 @@ void *miss(code_block_t *code, int *counter)
         return blocks[(*counter)++].where;
 }
 
-void *cache_code_block(code_block_t *code) {
+void *cache_code_block(code_block_t *code)
+{
         message(MESSAGE_DEBUG, "Number of blocks: %d\n", blocks_size);
         message(MESSAGE_DEBUG, "Current index: %d\n", blocks_ptr);
         // Check if code block is already cached

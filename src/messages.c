@@ -3,11 +3,13 @@
 
 void (*message_handler_function)(int, const char*, va_list) = NULL;
 
-void _set_message_handler(void (*handler)(int, const char*, va_list)) {
+void _set_message_handler(void (*handler)(int, const char*, va_list))
+{
         message_handler_function = handler;
 }
 
-void message(int level, const char* message, ...) {
+void message(int level, const char* message, ...)
+{
         va_list args;
         va_start(args, level);
 
