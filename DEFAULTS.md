@@ -7,7 +7,7 @@ This document outlines how the default compiler interface with the library. This
 The default compiler is able to take equations such as:
 `x + y * x / INTEGRAL 1 x ( x^2 + 2*x + 1 ) - DERIVATIVE 1 x ( x ) * E` and convert them into x86-64 machine code.
 
-*\** Note: Currently exponents do not support non-intergeral power types.
+*\** Note: Currently exponents do not support powers of non-integral types.
 
 The default run function then executes the x86-64 machine code buffer.
 
