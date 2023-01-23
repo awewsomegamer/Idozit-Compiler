@@ -38,4 +38,4 @@ You code should consider the following:
 * `Comments` - What is the developer thinking here? What do these lines mean?
 * `Modification` - Is it easy to modify?
 
-You must also provide a document following the lines of <a href="DEFAULTS.md>DEFAULTS.md</a>, to explain how your aspect(s) work(s), and what functions are provided.
+You must also provide a document following the lines of <a href="DEFAULTS.md">DEFAULTS.md</a>, to explain how your aspect(s) work(s), and what functions are provided.

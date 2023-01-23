@@ -3,6 +3,14 @@
 ## What
 This document outlines how the default compiler interface with the library. This document builds on top of <a href="DEVELOPERS.md">DEVELOPERS.md</a> and <a href="USERS.md">USERS.md</a>. Ensure the previously mentioned resources have been read and understood.
 
+## Overall
+The default compiler is able to take equations such as:
+`x + y * x / INTEGRAL 1 x ( x^2 + 2*x + 1 ) - DERIVATIVE 1 x ( x ) * E` and convert them into x86-64 machine code.
+
+*\** Note: Currently exponents do not support non-intergeral power types.
+
+The default run function then executes the x86-64 machine code buffer.
+
 ## Lexer
 The lexer recognizes the following:
 * Number literals (123, 1237.786) - Constant values
@@ -12,7 +20,7 @@ The lexer recognizes the following:
 * '*'
 * '/'
 * '(' and ')'
-* '^' - Exponent (currently only integer powers are supported (x^`2` and not x^`2.1`))
+* '^' - Exponent
 
 The lexer provides two functions to call:
 * int `lex`(token_t *token) - This function returns the next recognized token in the character stream, if a token is found it returns 1, if no token is found it returns 0.
