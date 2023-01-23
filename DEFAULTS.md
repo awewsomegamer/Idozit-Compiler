@@ -12,7 +12,7 @@ The lexer recognizes the following:
 * '*'
 * '/'
 * '(' and ')'
-* '^' - Exponent
+* '^' - Exponent (currently only integer powers are supported (x^`2` and not x^`2.1`))
 
 The lexer provides two functions to call:
 * int `lex`(token_t *token) - This function returns the next recognized token in the character stream, if a token is found it returns 1, if no token is found it returns 0.
