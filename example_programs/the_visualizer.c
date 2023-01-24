@@ -69,6 +69,8 @@ void render() {
  * 0 - x + y + t (0.01)
  * x / y - t / 2 (1, 5) - Entropy Wave
  * PI - x / y - t / 2 (0.1) - Big rotating rotor
+ * 2^(x)/t (1)
+ * y^x / t (0.1) - The Equation
  * 
  * t - x / t (0.1 -> 0.001) - Stripey
  * x + 4.72 - 642 (27.1 -> 0.1) - Skrunk
@@ -81,7 +83,7 @@ void* vram_update(void* args) {
         while (running) {
                 for (double i = 0; i < 480; i++) {
                         for (double j = 0; j < 640; j++) {
-                                double value = run(&code, j + 2, i + 2, t + 2);
+                                double value = run(&code, j, i, t);
                                 VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
                         }
                 }
