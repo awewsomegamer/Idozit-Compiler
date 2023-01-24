@@ -18,11 +18,11 @@ int main() {
         // // TODO: Really annoying how run function doesn't like integers and only likes when the .0 is added
         // printf("%f\n", run(&code0, 2.0, 1.0));
 
-        for (int i = 0; i < 480; i++) {
-                for (double j = 0; j < 640; j++) {
-                        printf("%f\n", run(&code1, j + 2));
-                }
-        }
+        // for (int i = 0; i < 480; i++) {
+        //         for (double j = 0; j < 640; j++) {
+                        printf("%f\n", run(&code1, -2.0));
+        //         }
+        // }
 
         // run(&code2, 2.0);
         // run(&code3, 2.0);

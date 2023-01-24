@@ -340,40 +340,39 @@ int evaluate(tree_code_t *tree)
                         append_byte(0x0F);
                         append_byte(0x6E);
                         append_byte(0xC0 + ((reg % 8) * 8));
-
-                        // SUBSD right, reg
-                        append_byte(0xF2);
                         
-                        if (left >= 8) {
-                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
-                        }
-
-                        append_byte(0x0F);
-                        append_byte(0x5C);
-                        append_byte(0xC0 + reg + ((right % 8) * 8));
-
-                        // CVTSD2SI RAX, right
+                        // CVTSD2SI R8, right
                         append_byte(0xF2);
                         append_byte(0x4C + (right > 7))
                         append_byte(0x0F);
                         append_byte(0x2D);
                         append_byte(0xC0 + (right % 8));
 
-                        free_reg(right);
-                        
-                        // MOVSD reg, base
-                        append_byte(0xF2);
+                        // CMP R8, 0
+                        append_byte(0x49);
+                        append_byte(0x83);
+                        append_byte(0xF8);
+                        append_byte(0x00);
 
-                        if (left >= 8) {
-                                append_byte(0x40 + (right >= 8) + ((left >= 8) * 4));
-                        }
-
+                        // JL DIV
                         append_byte(0x0F);
-                        append_byte(0x10);
-                        append_byte(0xC0 + left + ((reg % 8) * 8));  
+                        append_byte(0x8C);
+                        // Add in the offset of where to jump to
+                        append_byte(0x0E + (left >= 8 || right >= 8 || reg >= 8) * 2);
+                        append_byte(0x00);
+                        append_byte(0x00);
+                        append_byte(0x00);
 
-                        // Do the loop
+                        // JE END
+                        append_byte(0x0F);
+                        append_byte(0x84);
+                        // Add in the offset of where to jump to
+                        append_byte(0x21 + (left >= 8 || right >= 8 || reg >= 8) * 2);
+                        append_byte(0x00);
+                        append_byte(0x00);
+                        append_byte(0x00);
 
+                        // Positive Case (Multiplication)
                         // MULSD XMMR, REG
                         append_byte(0xF2); // 9?
 
@@ -383,7 +382,7 @@ int evaluate(tree_code_t *tree)
 
                         append_byte(0x0F); // 7
                         append_byte(0x59); // 6
-                        append_byte(0xC0 + reg + ((left % 8) * 8)); // 5
+                        append_byte(0xC0 + left + ((reg % 8) * 8)); // 5
 
                         // SUB R8, 1
                         append_byte(0x49); // 4
@@ -399,7 +398,57 @@ int evaluate(tree_code_t *tree)
                         append_byte(0xFF);
                         append_byte(0xFF);
 
+                        // JMP END
+                        append_byte(0xE9); // 0
+                        append_byte(0x0E + (left >= 8 || right >= 8 || reg >= 8)); // 1
+                        append_byte(0x00); // 2
+                        append_byte(0x00); // 3
+                        append_byte(0x00); // 4
+
+
+                        // Negative Case (Division)
+                        // DIVSD XMMR, REG
+                        append_byte(0xF2); // 9? // 5?
+
+                        if (left >= 8 || right >= 8 || reg >= 8) {
+                                append_byte(0x40 + (right >= 8 || reg >= 8) + ((left >= 8) * 4)); // 8? // 6?
+                        }
+
+                        append_byte(0x0F); // 7 // 7
+                        append_byte(0x5E); // 6 // 8
+                        append_byte(0xC0 + left + ((reg % 8) * 8)); // 5 // 9
+
+                        // ADD R8, 1
+                        append_byte(0x49); // 4 // 10
+                        append_byte(0x83); // 3 // 11
+                        append_byte(0xC0); // 2 // 12
+                        append_byte(0x01); // 1 // 13
+
+                        // JNZ
+                        append_byte(0x0F); // 0 // 14
+                        append_byte(0x85); // 15
+                        append_byte(0xFF - 8 - (right >= 8 || reg >= 8 || left >= 8) - 5); // 16
+                        append_byte(0xFF); // 17
+                        append_byte(0xFF); // 18
+                        append_byte(0xFF); // 19
+
+                        // End Case
+                
+                        // MOV left, reg
+                        append_byte(0xF2);
+
+                        if (left >= 8 || reg >= 8) {
+                                append_byte(0x40 + (reg >= 8) + ((left >= 8) * 4));
+                        }
+
+                        append_byte(0x0F);
+                        append_byte(0x10);
+                        append_byte(0xC0 + reg + ((left % 8) * 8));
+
+                        free_reg(right);
                         free_reg(reg);
+
+                        return left;
                 } else {
                         int repetitions = vright - 1;
                         int reg = 0;
