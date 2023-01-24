@@ -358,7 +358,7 @@ int evaluate(tree_code_t *tree)
                         append_byte(0x0F);
                         append_byte(0x8C);
                         // Add in the offset of where to jump to
-                        append_byte(0x0E + (left >= 8 || right >= 8 || reg >= 8) * 2);
+                        append_byte(0x19 + (left >= 8 || right >= 8 || reg >= 8) * 2);
                         append_byte(0x00);
                         append_byte(0x00);
                         append_byte(0x00);
