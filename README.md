@@ -33,7 +33,7 @@ Further documentation about how to **use** the library is available at <a href="
 For information about the example programs, visit <a href="EXAMPLES.md">EXAMPLES.md</a>
 
 ## Contribution
-You code should consider the following:
+Your code should consider the following:
 * `Readability` - Is it easy to read?
 * `Comments` - What is the developer thinking here? What do these lines mean?
 * `Modification` - Is it easy to modify?

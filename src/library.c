@@ -118,7 +118,6 @@ double run(code_block_t *code, ...)
                 message(MESSAGE_DEBUG, "Running: %s\n", machine_code_string);
                 free(machine_code_string);
         #endif
-
         
         asm("push rcx;    \
              mov rcx, %0;" : : "a"((uintptr_t)code->func + code->code_size) :);

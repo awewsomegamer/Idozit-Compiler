@@ -81,7 +81,7 @@ void* vram_update(void* args) {
         while (running) {
                 for (double i = 0; i < 480; i++) {
                         for (double j = 0; j < 640; j++) {
-                                double value = run(&code, j, i, t);
+                                double value = run(&code, j + 2, i + 2, t + 2);
                                 VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
                         }
                 }

@@ -40,7 +40,7 @@ void* vram_update(void* args) {
                 memset(VRAM, 0, sizeof(VRAM));
                 
                 for (double j = -80; j < 80; j += granularity) {
-                        int y_value = (int)run(&code, j, t);
+                        int y_value = (int)run(&code, j + 90, t + 2);
 
                         if (y_value - 240 < 0 && y_value - 240 > -480) {
                                 VRAM[-y_value + 240][(int)(j*4) + 320] = 0xFFFFFF;

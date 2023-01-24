@@ -7,7 +7,7 @@ int main() {
         idozit_word.cache_cut_off = 1000 * 60 * 5; // 5 minutes
 
         // code_block_t code0 = compile(expression("INTEGRAL 1 x ( x^2 + 2*x + 1 + y + y*x )", 2, "x", "y"));
-        code_block_t code1 = compile(expression("x^8", 1, "x"));
+        code_block_t code1 = compile(expression("2^x", 1, "x"));
         // code_block_t code2 = compile(expression("3", 0));
         // code_block_t code3 = compile(expression("4", 0));
         // code_block_t code4 = compile(expression("5", 0));
@@ -17,7 +17,13 @@ int main() {
 
         // // TODO: Really annoying how run function doesn't like integers and only likes when the .0 is added
         // printf("%f\n", run(&code0, 2.0, 1.0));
-        printf("%f, %f\n", run(&code1, 2.0), run(&code1, 2.0));
+
+        for (int i = 0; i < 480; i++) {
+                for (double j = 0; j < 640; j++) {
+                        printf("%f\n", run(&code1, j + 2));
+                }
+        }
+
         // run(&code2, 2.0);
         // run(&code3, 2.0);
         // run(&code4, 2.0);
