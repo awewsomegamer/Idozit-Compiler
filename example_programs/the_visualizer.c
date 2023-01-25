@@ -7,10 +7,12 @@ SDL_Event event;
 SDL_Renderer* renderer;
 SDL_Texture* texture;
 
-code_block_t code;
 uint32_t VRAM[480][640];
 double t = 0;
 double t_i = 1;
+
+int function_count = 0;
+code_block_t *functions = NULL;
 
 void update() {
         SDL_PollEvent(&event);
@@ -80,19 +82,27 @@ void render() {
  * ((x * t + x - y)^t / x - y^t * PI / y - y + t * x) * e ^ 2 (0.001) - Coolest The Blue by far
  * 0 - ((x * t + x - y)^t / x - y^t * PI / y - y + t * x) * e ^ 2 (0.001) - Nile Red / Nile Blue
  * 
+ * ----
+ * 
  * t - x / t (0.1 -> 0.001) - Stripey
  * x + 4.72 - 642 (27.1 -> 0.1) - Skrunk
  * 43 / 270 * 6 - y + 873 * t (27.1) - Pastel
+ * 
+ * ----
+ * 
+ * 1 "x/y/t" "x-y" "t^PI" - Flasher
  * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI
  */
 void* vram_update(void* args) {
         while (running) {
-                for (double i = 0; i < 480; i++) {
-                        for (double j = 0; j < 640; j++) {
-                                double value = run(&code, j, i, t);
-                                VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
+                for (int x = 0; x < function_count; x++) {
+                        for (double i = 0; i < 480; i++) {
+                                for (double j = 0; j < 640; j++) {
+                                        double value = run(&functions[x], j, i, t);
+                                        VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] += value;
+                                }
                         }
                 }
 
@@ -102,11 +112,16 @@ void* vram_update(void* args) {
 
 int main(int argc, char** argv) {
         // variables: x(-coord), y(-coord), t(ick or time)
-        // expression: argv[1]
-        // time incrementer (t_i): argv[2]
+        // time incrementer (t_i): argv[1]
+        // expression: argv[2 ->]
 
-        t_i = atof(argv[2]);
-        code = compile(expression(argv[1], 3, "x", "y", "t"));
+        functions = calloc(argc - 2, sizeof(code_block_t));
+        function_count = argc - 2;
+
+        t_i = atof(argv[1]);
+        
+        for (int i = 2; i < argc; i++)
+                functions[i - 2] = compile(expression(argv[i], 3, "x", "y", "t"));
 
         SDL_Window* window = SDL_CreateWindow("The Visualizer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, 0);
         renderer = SDL_CreateRenderer(window, -1, 0);
