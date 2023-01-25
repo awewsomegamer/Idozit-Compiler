@@ -71,6 +71,14 @@ void render() {
  * PI - x / y - t / 2 (0.1) - Big rotating rotor
  * 2^(x)/t (1)
  * y^x / t (0.1) - The Equation
+ * x * t + x - y (0.001)
+ * (x * t + x - y)^t (0.01) - Pattern Flipper
+ * (x * t + x - y)^t / x (0.01) - Pattern Flipper (Different)
+ * (x * t + x - y)^t / x - y (0.01) - Pattern Flipper (Different 2)
+ * (x * t + x - y)^t / x - y^t * PI (0.001) - Rings
+ * (x * t + x - y)^t / x - y^t * PI / y - y + t * x (0.001) - The Blue
+ * ((x * t + x - y)^t / x - y^t * PI / y - y + t * x) * e ^ 2 (0.001) - Coolest The Blue by far
+ * 0 - ((x * t + x - y)^t / x - y^t * PI / y - y + t * x) * e ^ 2 (0.001) - Nile Red / Nile Blue
  * 
  * t - x / t (0.1 -> 0.001) - Stripey
  * x + 4.72 - 642 (27.1 -> 0.1) - Skrunk
