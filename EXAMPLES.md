@@ -28,7 +28,7 @@ The way to call the executable is `the_visualizer.out "x / y / t" 0.001`.
 
 This will open a 640x480 32-bit RGB color window, where the variable `t` will be incremented by `0.001`, and the color and position of each pixel be influenced by `expression: "x / y / t"`.
 
-Demonstration video available <a href="https://www.youtube.com/watch?v=2YqrAQ_BL9o">here</a>.
+Demonstration video available <a href="https://www.youtube.com/watch?v=2YqrAQ_BL9o" target="_blank">here</a>.
 
 ## Graphing Calculator (./example_programs/graphing_calculator.c)
 ### REQUIRES: SDL2
@@ -42,4 +42,4 @@ The way to call the executable is: `graphing_calculator "x^2" 0.0001 0.1`
 
 This will open a 640x480 32-bit RGB color window, and plot in white `expression: "x^2"` with a `granularity` of `0.0001` and increment the variable `t` (time) by 0.1 every frame.
 
-Demonstration video available <a href="https://www.youtube.com/watch?v=Cog0kFnWwTM">here</a>.
+Demonstration video available <a href="https://www.youtube.com/watch?v=Cog0kFnWwTM" target="_blank">here</a>.
