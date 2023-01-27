@@ -3,6 +3,8 @@
 
 #include <idozit.h>
 
+extern pthread_mutex_t cacher_mutex;
+
 /* void *cahce_code_block(code_block_t *code) :
  * Allocates executable memory for the given block of code.
 

@@ -93,6 +93,7 @@ void render() {
  * 1 "x/y/t" "x-y" "t^PI" - Flasher
  * 0.001 "x/y/t" "x-t" - Quite cool
  * 0.1 "0 - x/y/t" "PI*t"
+ * 0.000001 "x*t*y-t+x" - The Spill
  * 
  * VRAM[abs(((int)value + (int)i)%480)][abs(((int)value + (int)j)%640)] = value;
  * x / y / t / PI

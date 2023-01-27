@@ -51,6 +51,8 @@ void *miss(code_block_t *code, int *counter)
 
 void *cache_code_block(code_block_t *code)
 {
+        pthread_mutex_lock(&cacher_mutex);
+
         message(MESSAGE_DEBUG, "Number of blocks: %d\n", blocks_size);
         message(MESSAGE_DEBUG, "Current index: %d\n", blocks_ptr);
         // Check if code block is already cached
@@ -58,6 +60,8 @@ void *cache_code_block(code_block_t *code)
                 if (blocks[i].code == code) {
                         message(MESSAGE_DEBUG, "Found cached entry (%d), returning\n", i);
                         blocks[i].last_used = get_time();
+                        pthread_mutex_unlock(&cacher_mutex);
+        
                         return blocks[i].where;
                 }
 
@@ -101,12 +105,16 @@ void *cache_code_block(code_block_t *code)
                         blocks[i].code = code;
 
                         message(MESSAGE_DEBUG, "Block %d is free, returning for use\n", i);
-
+                        
+                        pthread_mutex_unlock(&cacher_mutex);
+        
                         return blocks[i].where;
                 } else if ((blocks[i].properties & 1) == 0) {
                         // Make a bigger block and replace this one
                         message(MESSAGE_DEBUG, "Block %d is free, too small\n", i);
                         munmap(blocks[i].where, blocks[i].size);
+                        pthread_mutex_unlock(&cacher_mutex);
+        
                         return miss(code, &i);
                 }
 
@@ -131,15 +139,22 @@ void *cache_code_block(code_block_t *code)
                         blocks[oldest].size = code->code_size + code->data_size;
 
                         message(MESSAGE_DEBUG, "Cache filled, selecting relatively oldest block (%d), returning for use\n", oldest);
-
+                        
+                        pthread_mutex_unlock(&cacher_mutex);
+        
                         return blocks[oldest].where;
                 } else {
                         // Free the last buffer and replace it with a bigger buffer
                         message(MESSAGE_DEBUG, "Relatively oldest buffer (%d) found, too small\n");
                         munmap(blocks[oldest].where, blocks[oldest].size);
+
+                        pthread_mutex_unlock(&cacher_mutex);
+
                         return miss(code, &oldest);
                 }
         }
 
+        pthread_mutex_unlock(&cacher_mutex);
+        
         return miss(code, &blocks_ptr);
 }

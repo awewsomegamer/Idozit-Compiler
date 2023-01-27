@@ -20,9 +20,8 @@ code_block_t *last_exec = NULL;
 
 pthread_mutex_t expression_mutex;
 pthread_mutex_t compile_mutex;
-
-// This one is debatable
 pthread_mutex_t run_mutex;
+pthread_mutex_t cacher_mutex;
 
 struct idozit_word_struct idozit_word;
 
@@ -87,7 +86,7 @@ code_block_t compile(context_t context)
 
 double run(code_block_t *code, ...)
 {      
-        // pthread_mutex_lock(&run_mutex);
+        pthread_mutex_lock(&run_mutex);
 
         va_list args;
         va_start(args, code);
@@ -138,19 +137,23 @@ double run(code_block_t *code, ...)
 
         asm("pop rcx");
 
-        // pthread_mutex_unlock(&run_mutex);
+        pthread_mutex_unlock(&run_mutex);
 
         return result;
 }
 
 void set_lexer(int (*func)(token_t *))
 {
+        pthread_mutex_lock(&expression_mutex);
         _set_lexer_function(func);
+        pthread_mutex_unlock(&expression_mutex);
 }
 
 void set_parser(tree_code_t * (*func)())
 {
+        pthread_mutex_lock(&expression_mutex);
         _set_parser_function(func);
+        pthread_mutex_unlock(&expression_mutex);
 }
 
 void set_semantic_analyzer(void (*func)(tree_code_t *))
@@ -160,7 +163,9 @@ void set_semantic_analyzer(void (*func)(tree_code_t *))
 
 void set_code_generator(code_block_t (*func)(tree_code_t *, int))
 {
+        pthread_mutex_lock(&compile_mutex);
         code_generator = func;
+        pthread_mutex_lock(&compile_mutex);
 }
 
 void set_message_handler(void (*func)(int, const char *, va_list))
@@ -170,10 +175,14 @@ void set_message_handler(void (*func)(int, const char *, va_list))
 
 void set_run_function(double (*func)(code_block_t *, va_list))
 {
+        pthread_mutex_lock(&run_mutex);
         run_func = func;
+        pthread_mutex_lock(&run_mutex);
 }
 
 void set_cacher_function(void * (*func)(code_block_t *))
 {
+        pthread_mutex_lock(&cacher_mutex);
         cacher_func = func;
+        pthread_mutex_lock(&cacher_mutex);
 }
