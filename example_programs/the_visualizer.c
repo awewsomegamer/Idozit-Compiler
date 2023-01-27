@@ -84,7 +84,7 @@ void render() {
  * 
  * ----
  * 
- * t - x / t (0.1 -> 0.001) - Stripey
+ * t - x / t     t + y * y (0.1 -> 0.001) - Stripey
  * x + 4.72 - 642 (27.1 -> 0.1) - Skrunk
  * 43 / 270 * 6 - y + 873 * t (27.1) - Pastel
  * 
